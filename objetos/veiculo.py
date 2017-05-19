@@ -34,7 +34,7 @@ class Veiculo:
 
         self.veiculo = master.create_rectangle(x + self.dist_pass, y,
                                                x + self.dist_pass + self.largura, y + self.comprimento,
-                                               fill= self.cor)
+                                               fill=self.cor)
 
     def adicionar_horizontal(self, master: Canvas, x, y):
         """
