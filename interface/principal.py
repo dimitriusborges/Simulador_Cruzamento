@@ -1,5 +1,6 @@
 import platform
 import threading
+import random
 from tkinter import *
 
 import time
@@ -15,8 +16,12 @@ class Principal:
         self.i_r1 = 608, 0  # inicio da rua 1
         self.i_r2 = 208, 400  # inicio da rua 2
 
-        self.veiculos_ns = []  # fila de veiculos na via Norte<->Sul
-        self.veiculos_ol = []  # fila de veiculos na via Oeste<->Leste
+        self.veiculos_ns = []  # fila de veiculos na via Norte->Sul
+        self.veiculos_sn = []  # fila de veiculos na via Sul->Norte
+        self.veiculos_ol = []  # fila de veiculos na via Oeste->Leste
+        self.veiculos_lo = []  # fila de veiculos na via Leste->Oeste
+
+        self.velocidades = [5, 8, 11]   # 20km/h, 30km/h, 40km/h, em metros por segundo, valores aproximados
 
         # Configurações da tela/conteiner
         self.root = Tk()
@@ -41,13 +46,21 @@ class Principal:
         self.inserir_semaforos()
         self.inserir_veiculos()
 
-        self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_vertical)
+        self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_ns)
         self.thread_veiculos_ns.setDaemon(True)
         self.thread_veiculos_ns.start()
 
-        self.thread_veiculos_ol = threading.Thread(target=self.animacao_carros_horizontal)
+        self.thread_veiculos_sn = threading.Thread(target=self.animacao_carros_sn)
+        self.thread_veiculos_sn.setDaemon(True)
+        self.thread_veiculos_sn.start()
+
+        self.thread_veiculos_ol = threading.Thread(target=self.animacao_carros_ol)
         self.thread_veiculos_ol.setDaemon(True)
         self.thread_veiculos_ol.start()
+        #
+        # self.thread_seeder_veiculos = threading.Thread(target=self.seeder_veiculos)
+        # self.thread_seeder_veiculos.setDaemon(True)
+        # self.thread_seeder_veiculos.start()
 
     def inserir_ruas(self):
         """
@@ -142,8 +155,6 @@ class Principal:
                                  self.i_r1[1] + Rua().comprimento - Rua().largura - 15,
                                  verde=True)
 
-        # print(self.sem_1.estado, self.sem_2.estado, self.sem_3.estado, self.sem_4.estado)
-
     def inserir_veiculos(self):
         """
 
@@ -156,23 +167,30 @@ class Principal:
         # carro.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1] + 200)
         # self.veiculos_ns.append(carro)
 
-        carro = Veiculo(self.i_r1[0], self.i_r1[1], self.i_r1[0], self.i_r1[1] + 400)
-        carro.velocidade = 11
-        carro.torque = 1
-        carro.sentido = 'ns'
-        carro.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1])
-        self.veiculos_ns.append(carro)
+        # carro = Veiculo(self.i_r1[0], self.i_r1[1], self.i_r1[0], self.i_r1[1] + 400)
+        # carro.velocidade = 11
+        # carro.torque = 1
+        # carro.sentido = 'ns'
+        # carro.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1])
+        # self.veiculos_ns.append(carro)
+        #
+        # carro = Veiculo(self.i_r2[0], self.i_r2[1] + 48, self.i_r2[0] + 400, self.i_r2[1] + 48)
+        # carro.velocidade = 5
+        # carro.torque = 1
+        # carro.sentido = 'ol'
+        # carro.adicionar_horizontal(self.canvas, self.i_r2[0], self.i_r2[1] + 48)
+        # self.veiculos_ol.append(carro)
+        #
+        # carro = Veiculo(self.i_r1[0] + 48, self.i_r1[1] + 400 + 64 + 400, self.i_r1[0] + 48, self.i_r1[1] + 400)
+        # carro.velocidade = 8
+        # carro.torque = 1
+        # carro.sentido = 'sn'
+        # carro.adicionar_vertical(self.canvas, self.i_r1[0] + 48, self.i_r1[1] + 400 + 64 + 400)
+        # self.veiculos_sn.append(carro)
 
-        carro = Veiculo(self.i_r2[0], self.i_r2[1] + 48, self.i_r2[0] + 400, self.i_r2[1] + 48)
-        carro.velocidade = 8
-        carro.torque = 1
-        carro.sentido = 'ol'
-        carro.adicionar_horizontal(self.canvas, self.i_r2[0], self.i_r2[1] + 48)
-        self.veiculos_ol.append(carro)
-
-    def animacao_carros_vertical(self):
+    def animacao_carros_ns(self):
         """
-        Gerencia a movientação dos veículos na via Norte<->Sul
+        Gerencia a movientação dos veículos na via Norte->Sul
         :return:
         """
         aux = 0
@@ -181,34 +199,19 @@ class Principal:
         while True:
 
             for veiculo in self.veiculos_ns:
-
                 # Converte de metros/segundo para metros/0.1 segundo
                 vel_100ms = veiculo.velocidade/10
 
-                # Checa o sentido do veículo e carrega variáveis de movimentação e semáforo da via
-                if veiculo.sentido == 'ns':
+                #Ccarrega variáveis de movimentação e semáforo da via
+                semaforo = self.sem_ns
 
-                    semaforo = self.sem_ns
+                if veiculo.velocidade == 0:
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] + 0)
 
-                    if veiculo.velocidade == 0:
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] + 0)
-
-                    else:
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] + vel_100ms * 4 * aux)
-
-                if veiculo.sentido == 'sn':
-
-                    semaforo = self.sem_sn
-
-                    if veiculo.velocidade == 0:
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] + 0)
-
-                    else:
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] - vel_100ms * 4 * aux)
+                else:
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] + vel_100ms * 4 * aux)
 
                 movimentar = self.verificar_checkpoints(prox_pos, semaforo, veiculo, self.veiculos_ns)
 
@@ -221,7 +224,45 @@ class Principal:
 
             time.sleep(0.1)
 
-    def animacao_carros_horizontal(self):
+    def animacao_carros_sn(self):
+        """
+        Gerencia a movientação dos veículos na via Sul->Norte
+        :return:
+        """
+
+        aux = 0
+        prox_pos = []
+
+        while True:
+
+            for veiculo in self.veiculos_sn:
+                # Converte de metros/segundo para metros/0.1 segundo
+                vel_100ms = veiculo.velocidade / 10
+
+                # Carrega variáveis de movimentação e semáforo da via
+
+                semaforo = self.sem_sn
+
+                if veiculo.velocidade == 0:
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] + 0)
+
+                else:
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] - vel_100ms * 4 * aux)
+
+                movimentar = self.verificar_checkpoints(prox_pos, semaforo, veiculo, self.veiculos_sn)
+
+                if movimentar is True:
+                    veiculo.remover(self.canvas)
+
+                    veiculo.adicionar_vertical(self.canvas, prox_pos[0], prox_pos[1])
+
+                    aux += 1
+
+            time.sleep(0.1)
+
+    def animacao_carros_ol(self):
         """
         Gerencia a movientação dos veículos na via Oeste<->Leste
         :return:
@@ -236,34 +277,57 @@ class Principal:
                 # Converte de metros/segundo para metros/0.1 segundo
                 vel_100ms = veiculo.velocidade / 10
 
-                # Checa o sentido do veículo e carrega variáveis de movimentação e semáforo da via
-                if veiculo.sentido == 'ol':
+                # Carrega variáveis de movimentação e semáforo da via
+                semaforo = self.sem_ol
 
-                    semaforo = self.sem_ol
+                if veiculo.velocidade == 0:
 
-                    if veiculo.velocidade == 0:
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] + 0)
 
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] + 0)
-
-                    else:
-                        prox_pos = (veiculo.pos_inicial[0] + vel_100ms * 4 * aux,
-                                    veiculo.pos_inicial[1])
-
-                if veiculo.sentido == 'lo':
-
-                    semaforo = self.sem_lo
-
-                    if veiculo.velocidade == 0:
-
-                        prox_pos = (veiculo.pos_inicial[0],
-                                    veiculo.pos_inicial[1] + 0)
-
-                    else:
-                        prox_pos = (veiculo.pos_inicial[0] - vel_100ms * 4 * aux,
-                                    veiculo.pos_inicial[1])
+                else:
+                    prox_pos = (veiculo.pos_inicial[0] + vel_100ms * 4 * aux,
+                                veiculo.pos_inicial[1])
 
                 movimentar = self.verificar_checkpoints(prox_pos, semaforo, veiculo, self.veiculos_ol)
+
+                if movimentar is True:
+                    veiculo.remover(self.canvas)
+
+                    veiculo.adicionar_horizontal(self.canvas, prox_pos[0], prox_pos[1])
+
+                    aux += 1
+
+            time.sleep(0.1)
+
+    def animacao_carros_lo(self):
+        """
+        Gerencia a movientação dos veículos na via Leste->Oeste
+        :return:
+        """
+
+        aux = 0
+        prox_pos = []
+        while True:
+
+            for veiculo in self.veiculos_lo:
+
+                # Converte de metros/segundo para metros/0.1 segundo
+                vel_100ms = veiculo.velocidade / 10
+
+                # Carrega variáveis de movimentação e semáforo da via
+                semaforo = self.sem_lo
+
+                if veiculo.velocidade == 0:
+
+                    prox_pos = (veiculo.pos_inicial[0],
+                                veiculo.pos_inicial[1] + 0)
+
+                else:
+                    prox_pos = (veiculo.pos_inicial[0] - vel_100ms * 4 * aux,
+                                veiculo.pos_inicial[1])
+
+                movimentar = self.verificar_checkpoints(prox_pos, semaforo, veiculo, self.veiculos_lo)
 
                 if movimentar is True:
                     veiculo.remover(self.canvas)
@@ -283,21 +347,33 @@ class Principal:
         :return:
         """
 
-        if veiculo.sentido == 'ns':
+        if veiculo.sentido == 'ns' or veiculo.sentido == 'sn':
             limite_semaforo = prox_pos[1]
 
-        if veiculo.sentido == 'ol':
+        if veiculo.sentido == 'ol' or veiculo.sentido == 'lo':
             limite_semaforo = prox_pos[0]
 
         # Verifica se o semáforo da via está aberto ou fechado
-        if limite_semaforo >= semaforo.posicao:
 
-            if semaforo.estado is False:
-                return False
+        # Sentido de + no plano usa >=
+        if veiculo.sentido == 'ns' or veiculo.sentido == 'ol':
+
+            if limite_semaforo >= semaforo.posicao:
+                print("Semaforo")
+                if semaforo.estado is False:
+                    return False
+
+        # Sentido de - no plano usa <=
+        elif veiculo.sentido == 'sn' or veiculo.sentido == 'lo':
+
+            if limite_semaforo <= semaforo.posicao:
+                print("Semaforo")
+                if semaforo.estado is False:
+                    return False
 
         # Verifica se a próxima posição não está ocupada por outro veículo
         if fila_veiculos.index(veiculo) - 1 > -1:
-
+            print("ocupado")
             carro_a_frente = fila_veiculos[self.veiculos_ns.index(veiculo) - 1]
 
             if prox_pos[0] + prox_pos[1] + Veiculo().comprimento >= \
@@ -307,14 +383,83 @@ class Principal:
 
         # verifica se o veículo chegou ao destino final
         # Soma é usada para que ambas as coordenadas sejam consideradas de forma conjunta
-        if prox_pos[0] + prox_pos[1] > veiculo.pos_final[0] + veiculo.pos_final[1]:
-            print("Final do percurso")
 
-            veiculo.remover(self.canvas)
-            fila_veiculos.remove(veiculo)
-            return False
+        # Sentido de + no plano usa >
+        if veiculo.sentido == 'ns' or veiculo.sentido == 'ol':
+
+            if prox_pos[0] + prox_pos[1] > veiculo.pos_final[0] + veiculo.pos_final[1]:
+                print("Final do percurso")
+
+                veiculo.remover(self.canvas)
+                fila_veiculos.remove(veiculo)
+                return False
+
+        # Sentido de - no plano usa <
+        elif veiculo.sentido == 'sn' or veiculo.sentido == 'lo':
+
+            if prox_pos[0] + prox_pos[1] < veiculo.pos_final[0] + veiculo.pos_final[1]:
+                print("Final do percurso")
+
+                veiculo.remover(self.canvas)
+                fila_veiculos.remove(veiculo)
+                return False
 
         return True
+
+    def seeder_veiculos(self):
+        """
+
+        :return:
+        """
+
+        seeder_ns = 0
+        seeder_ol = 0
+
+        while True:
+
+            if seeder_ns == 0:
+
+                seeder_ns = 5
+                self.inserir_veiculo_vertical()
+
+            else:
+                seeder_ns -= 1
+
+            if seeder_ol == 0:
+                seeder_ol = 300
+                # Gera veiculo
+
+            else:
+                seeder_ol -= 1
+
+            time.sleep(1)
+
+    def inserir_veiculo_vertical(self):
+        """
+
+        :return:
+        """
+
+        sentidos = ['ns', 'sn']
+
+        sentido = random.randint(0, 1)
+        velocidade = random.randint(0, 2)
+
+        if sentido == 'ns':
+            carro = Veiculo(self.i_r1[0], self.i_r1[1], self.i_r1[0], self.i_r1[1] + 400)
+            carro.velocidade = self.velocidades[velocidade]
+            carro.torque = 1
+            carro.sentido = sentidos[sentido]
+            carro.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1])
+            self.veiculos_ns.append(carro)
+
+        elif sentido == 'sn':
+            carro = Veiculo(self.i_r1[0] + 16, self.i_r1[1] + 400 + 16 + 400, self.i_r1[0], self.i_r1[1] + 400)
+            carro.velocidade = self.velocidades[velocidade]
+            carro.torque = 1
+            carro.sentido = sentidos[sentido]
+            carro.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1])
+            self.veiculos_sn.append(carro)
 
     def iniciar_app(self):
         """
