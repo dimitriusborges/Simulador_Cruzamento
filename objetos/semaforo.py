@@ -1,5 +1,7 @@
 from tkinter import Canvas
 from cores import Cores
+
+
 class Semaforo:
 
     def __init__(self, tag, pos):
@@ -118,5 +120,5 @@ class Semaforo:
 
         master.itemconfig(self.tag + '_vm', fill=cor_vermelho)
         master.itemconfig(self.tag + '_am', fill=cor_amarelo)
-        master.itemconfig(self.tag+'_vd', fill=cor_verde)
+        master.itemconfig(self.tag + '_vd', fill=cor_verde)
 
