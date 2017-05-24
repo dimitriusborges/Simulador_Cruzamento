@@ -171,30 +171,38 @@ class Principal:
 
         contadores = []                             # Timer de cada foco
 
-        # Tempos de cada foco (verde, amarelo, vermelho)
-        matriz_tempos = [[20, 2, 38],               # NS
-                         [25, 2, 33],               # OL
-                         [20, 2, 38],               # SN
-                         [25, 2, 33]]               # LO
+        # Tempos de cada foco (verde, amarelo, vermelho). Configuração de plano padrão
+        matriz_tempos = [[10, 2, 28],               # NS
+                         [15, 2, 23],               # OL
+                         [10, 2, 28],               # SN
+                         [15, 2, 23]]               # LO
+
+        # Configuração de plano atuado
+        matriz_atuado = [[4, 1, 8],                 # NS
+                         [4, 1, 8],                 # OL
+                         [4, 1, 8],                 # SN
+                         [4, 1, 8]]                 # LO
+
+        matriz_operante = list(matriz_tempos)       # Matriz auxiliar. A leitura dos tempos durante a animação é feita nela
 
         seq_estados = {"verde": "amarelo",          # Sequencia de cores que o foco deve assumir (verde->amarelo->vermelho)
                        "amarelo": "vermelho",
-                       "vermelho": "verde"
-        }
+                       "vermelho": "verde"}
 
-        estado_indice = {"verde": 0,                # Posicao que o tempo de cada cor assume na coluna da matriz
+        estado_indice = {"verde": 0,                # Posicao que do tempo de cada cor na coluna da matriz
                          "amarelo": 1,
                          "vermelho": 2}
 
-        sem_indice = {                              # Posicao de cada controlador na linha da matriz
-            self.sem_ns: 0,
-            self.sem_ol: 1,
-            self.sem_sn: 2,
-            self.sem_lo: 3
-        }
+        cor_inicial = self.sem_ns.estado            # Variaveis para determinar o fim de um ciclo
+        flag_ciclo = False
+
+        flag_atuado = False                         # Variável de controle do sinal atuado
+
 
         # Repetição secundária
         while True:
+
+            contadores.clear()
 
             # Preenche a lista de timers com o tempo da cor inicial de cada foco
             for semaforo in semaforos:
@@ -202,32 +210,65 @@ class Principal:
                 estado = semaforo.estado
 
                 indice_tempo = estado_indice[estado]
-                indice_sem = sem_indice[semaforo]
 
-                contadores.append((matriz_tempos[indice_sem])[indice_tempo] * 100)
+                contadores.append((matriz_operante[semaforos.index(semaforo)])[indice_tempo] * 1)
 
             # Repetição principal
             while True:
 
+                pointer = 0     # navegador auxiliar
+
                 # Faz a contagem regressiva no timer de cada um dos semaforos
-                for contador, semaforo in zip(contadores, semaforos):
+                for contador in contadores:
 
                     # Fim do timer = mudança de estado e novo tempo no contador
                     if contador == 0:
 
-                        estado = seq_estados[semaforo.estado]
-                        semaforo.mudar_estado(self.canvas, estado)
-                        indice_tempo = estado_indice[estado]
-                        indice_sem = sem_indice[semaforo]
-                        contadores[contadores.index(contador)] = (matriz_tempos[indice_sem])[indice_tempo]*100
+                        semaforo = semaforos[pointer]
+
+                        prox_estado = seq_estados[semaforo.estado]
+                        semaforo.mudar_estado(self.canvas, prox_estado)
+                        indice_tempo = estado_indice[prox_estado]
+
+                        contadores[contadores.index(contador)] = (matriz_operante[pointer])[indice_tempo] * 1
+
+                        # Todos os semáforos são controlados por um mesmo plano, com mesmo ciclo.
+                        # Portanto, basta observar apenas um para identificar o fim do ciclo
+                        if semaforo == self.sem_ns:
+
+                            # Se o estado seguinte for igual ao inicial, indica reinicio de ciclo
+                            if cor_inicial == prox_estado:
+                                flag_ciclo = True
 
                     else:
-                        contadores[contadores.index(contador)] -= 1
+                        contadores[pointer] -= 1
 
-                    # if semaforo == self.sem_ns:
-                    #     print(contador)
+                    pointer += 1
 
-                time.sleep(.01)
+                time.sleep(1)
+
+                # Se o controlador está entrando em um novo ciclo
+                if flag_ciclo is True:
+
+                    flag_ciclo = False
+
+                    # Se foi feito um pedido de plano atuado
+                    if flag_atuado is True:
+
+                        flag_atuado = False
+
+                        # Recarrega a matriz com os tempos do plano atuado
+                        matriz_operante.clear()
+                        matriz_operante = list(matriz_atuado)
+                        break
+
+                    # Se não foi feito pedido de plano atuado, mantem os tempos do plano principal
+                    elif flag_atuado is False:
+
+                        # Recarrega os tempos do plano principal
+                        matriz_operante.clear()
+                        matriz_operante = list(matriz_tempos)
+                        break
 
     def seeder_veiculos(self):
         """
@@ -383,7 +424,7 @@ class Principal:
 
                 else:
                     prox_pos = (veiculo.pos_inicial[0],
-                                veiculo.pos_atual[1] + veiculo.pos_inicial[1] + vel_100ms * 4)
+                                veiculo.pos_atual[1] + vel_100ms * 4)
 
                 movimentar = self.verificar_checkpoints(prox_pos, semaforo, veiculo, self.veiculos_ns)
 
