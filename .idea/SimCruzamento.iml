@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/objetos" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/interface" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/colecoes" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/animacoes" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
