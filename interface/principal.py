@@ -2,6 +2,7 @@ import platform
 import threading
 import random
 from tkinter import *
+from tkinter import messagebox
 from tkinter import ttk
 
 import time
@@ -90,9 +91,9 @@ class Principal:
         anim_veiculos_lo.setDaemon(True)
         anim_veiculos_lo.start()
 
-        anim_semaforos = AnimSemaforos(self.canvas, self.semaforos)
-        anim_semaforos.setDaemon(True)
-        anim_semaforos.start()
+        self.anim_semaforos = AnimSemaforos(self.canvas, self.semaforos)
+        self.anim_semaforos.setDaemon(True)
+        self.anim_semaforos.start()
 
     def inserir_ruas(self):
         """
@@ -301,11 +302,11 @@ class Principal:
         self.canvas.create_text(1318, 255, font=("Arial", 16), text='Configuração')
 
         self.canvas.create_text(1318, 285, anchor='w', text="Tipo:")
-        self.combo_plano = ttk.Combobox(self.canvas, width=10, value=('Principal', "Atuado"), state='readonly')
+        self.combo_plano = ttk.Combobox(self.canvas, width=10, value=('principal', "atuado"), state='readonly')
         self.combo_plano.place(x=1388, y=280)
 
         self.canvas.create_text(1498, 285, anchor='w', text="Ciclo:")
-        self.ciclo = Entry(self.canvas, width=6, bg='white')
+        self.ciclo = Spinbox(self.canvas, width=6, from_=1, to=255, bg='white')
         self.ciclo.place(x=1543, y=280)
 
         # GRUPOS
@@ -317,82 +318,82 @@ class Principal:
         cor_inicial = ['verde', 'vermelho']
 
         # Grupo 1
-        self.canvas.create_text(1318, 325, font=("Arial", 12), anchor='w', text='Grupo 1')
+        self.canvas.create_text(1318, 325, font=("Arial", 12), anchor='w', text='Semáforo 1')
 
         self.canvas.create_text(1318, 360, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp1 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
         self.combo_ci_gp1.place(x=1318 + espac_externo, y=355)
 
         self.canvas.create_text(1318, 360 + paragrafo_1, anchor='w', text='VD:')
-        self.tempo_vd_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vd_g1.place(x=1318 + espac_interno, y=360 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo, 360 + paragrafo_1, anchor='w', text='AM:')
-        self.tempo_am_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_am_g1.place(x=1318 + espac_externo + espac_interno, y=360 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo*2, 360 + paragrafo_1, anchor='w', text='VM:')
-        self.tempo_vm_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vm_g1.place(x=1318 + espac_externo*2 + espac_interno, y=360 + paragrafo_2)
 
         # Grupo 2
-        self.canvas.create_text(1318, 460, font=("Arial", 12), anchor='w', text='Grupo 2')
+        self.canvas.create_text(1318, 460, font=("Arial", 12), anchor='w', text='Semáforo 2')
 
         self.canvas.create_text(1318, 495, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp2 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
         self.combo_ci_gp2.place(x=1318 + espac_externo, y=490)
 
         self.canvas.create_text(1318, 490 + paragrafo_1, anchor='w', text='VD:')
-        self.tempo_vd_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g2 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vd_g2.place(x=1318 + espac_interno, y=490 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo, 490 + paragrafo_1, anchor='w', text='AM:')
-        self.tempo_am_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g2 =Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_am_g2.place(x=1318 + espac_externo + espac_interno, y=490 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo*2, 490 + paragrafo_1, anchor='w', text='VM:')
-        self.tempo_vm_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g2 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vm_g2.place(x=1318 + espac_externo*2 + espac_interno, y=490 + paragrafo_2)
 
         # Grupo 3
-        self.canvas.create_text(1318, 595, font=("Arial", 12), anchor='w', text='Grupo 3')
+        self.canvas.create_text(1318, 595, font=("Arial", 12), anchor='w', text='Semáforo 3')
 
         self.canvas.create_text(1318, 625, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp3 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
         self.combo_ci_gp3.place(x=1318 + espac_externo, y=620)
 
         self.canvas.create_text(1318, 620 + paragrafo_1, anchor='w', text='VD:')
-        self.tempo_vd_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vd_g3.place(x=1318 + espac_interno, y=620 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo, 620 + paragrafo_1, anchor='w', text='AM:')
-        self.tempo_am_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_am_g3.place(x=1318 + espac_externo + espac_interno, y=620 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo*2, 620 + paragrafo_1, anchor='w', text='VM:')
-        self.tempo_vm_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vm_g3.place(x=1318 + espac_externo*2 + espac_interno, y=620 + paragrafo_2)
 
         # Grupo 4
-        self.canvas.create_text(1318, 730, font=("Arial", 12), anchor='w', text='Grupo 4')
+        self.canvas.create_text(1318, 730, font=("Arial", 12), anchor='w', text='Semáforo 4')
 
         self.canvas.create_text(1318, 765, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp4 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
         self.combo_ci_gp4.place(x=1318 + espac_externo, y=760)
 
         self.canvas.create_text(1318, 760 + paragrafo_1, anchor='w', text='VD:')
-        self.tempo_vd_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vd_g4.place(x=1318 + espac_interno, y=760 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo, 760 + paragrafo_1, anchor='w', text='AM:')
-        self.tempo_am_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_am_g4.place(x=1318 + espac_externo + espac_interno, y=760 + paragrafo_2)
 
         self.canvas.create_text(1318 + espac_externo*2, 760 + paragrafo_1, anchor='w', text='VM:')
-        self.tempo_vm_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
         self.tempo_vm_g4.place(x=1318 + espac_externo*2 + espac_interno, y=760 + paragrafo_2)
 
-        self.bt_enviar_plano = Button(self.canvas, text="Enviar", width=10)
+        self.bt_enviar_plano = Button(self.canvas, text="Enviar", width=10, command=self.coletar_dados_grupos)
         self.bt_enviar_plano.place(x=1318, y=840)
 
         # ATUADO
@@ -460,27 +461,81 @@ class Principal:
         # PLANO E GRUPOS
         tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_operante
 
+        self.ciclo.delete(0, END)
         self.ciclo.insert(0, sum(tempo_atual[0]))
 
         self.combo_ci_gp1.set(self.sem_ns.cor_inicial)
+        self.tempo_vd_g1.delete(0, END)
         self.tempo_vd_g1.insert(0, (tempo_atual[0])[0])
+        self.tempo_am_g1.delete(0, END)
         self.tempo_am_g1.insert(0, (tempo_atual[0])[1])
+        self.tempo_vm_g1.delete(0, END)
         self.tempo_vm_g1.insert(0, (tempo_atual[0])[2])
 
         self.combo_ci_gp2.set(self.sem_ol.cor_inicial)
+        self.tempo_vd_g2.delete(0, END)
         self.tempo_vd_g2.insert(0, (tempo_atual[1])[0])
+        self.tempo_am_g2.delete(0, END)
         self.tempo_am_g2.insert(0, (tempo_atual[1])[1])
+        self.tempo_vm_g2.delete(0, END)
         self.tempo_vm_g2.insert(0, (tempo_atual[1])[2])
 
         self.combo_ci_gp3.set(self.sem_sn.cor_inicial)
+        self.tempo_vd_g3.delete(0, END)
         self.tempo_vd_g3.insert(0, (tempo_atual[2])[0])
+        self.tempo_am_g3.delete(0, END)
         self.tempo_am_g3.insert(0, (tempo_atual[2])[1])
+        self.tempo_vm_g3.delete(0, END)
         self.tempo_vm_g3.insert(0, (tempo_atual[2])[2])
 
         self.combo_ci_gp4.set(self.sem_lo.cor_inicial)
+        self.tempo_vd_g4.delete(0, END)
         self.tempo_vd_g4.insert(0, (tempo_atual[3])[0])
+        self.tempo_am_g4.delete(0, END)
         self.tempo_am_g4.insert(0, (tempo_atual[3])[1])
+        self.tempo_vm_g4.delete(0, END)
         self.tempo_vm_g4.insert(0, (tempo_atual[3])[2])
+
+    def coletar_dados_grupos(self):
+        """
+        Coleta os valores de entrada para os semárofos enviados pelo usuário
+        :return:
+        """
+
+        ciclo = int(self.ciclo.get())
+
+        semaforo1 = [int(self.tempo_vd_g1.get()), int(self.tempo_am_g1.get()), int(self.tempo_vm_g1.get())]
+
+        if sum(semaforo1) != ciclo:
+            messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 1 são diferentes do ciclo!")
+            return
+
+        semaforo2 = [int(self.tempo_vd_g2.get()), int(self.tempo_am_g2.get()), int(self.tempo_vm_g2.get())]
+
+        if sum(semaforo2) != ciclo:
+            messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 2 são diferentes do ciclo!")
+            return
+
+        semaforo3 = [int(self.tempo_vd_g3.get()), int(self.tempo_am_g3.get()), int(self.tempo_vm_g3.get())]
+
+        if sum(semaforo3) != ciclo:
+            messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 3 são diferentes do ciclo!")
+            return
+
+        semaforo4 = [int(self.tempo_vd_g4.get()), int(self.tempo_am_g4.get()), int(self.tempo_vm_g4.get())]
+
+        if sum(semaforo4) != ciclo:
+            messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 4 são diferentes do ciclo!")
+            return
+
+        if self.combo_plano.get() == 'principal':
+            self.anim_semaforos.matriz_principal.clear()
+            self.anim_semaforos.matriz_principal = [semaforo1, semaforo2, semaforo3, semaforo4]
+        elif self.combo_plano.get() == 'atuado':
+            self.anim_semaforos.matriz_atuado.clear()
+            self.anim_semaforos.matriz_atuado = [semaforo1, semaforo2, semaforo3, semaforo4]
+        else:
+            messagebox.showerror("Tipo", "Antes, selecione um tipo de plano!")
 
     def seeder_veiculos(self):
         """

@@ -19,7 +19,7 @@ class AnimSemaforos(threading.Thread):
         self.contadores = []  # Timer de cada foco
 
         # Tempos de cada foco (verde, amarelo, vermelho). Configuração de plano padrão
-        self.matriz_tempos = [[10, 2, 28],  # NS
+        self.matriz_principal = [[10, 2, 28],  # NS
                               [15, 2, 23],  # OL
                               [10, 2, 28],  # SN
                               [15, 2, 23]]  # LO
@@ -31,7 +31,7 @@ class AnimSemaforos(threading.Thread):
                               [4, 1, 8]]  # LO
 
         self.matriz_operante = list(
-            self.matriz_tempos)  # Matriz auxiliar. A leitura dos tempos durante a animação é feita nela
+            self.matriz_principal)  # Matriz auxiliar. A leitura dos tempos durante a animação é feita nela
 
         self.seq_cores = {"verde": "amarelo",  # Sequencia de cores que o foco deve assumir (verde->amarelo->vermelho)
                             "amarelo": "vermelho",
@@ -119,5 +119,5 @@ class AnimSemaforos(threading.Thread):
                     elif self.flag_atuado is False:
 
                         # Recarrega os tempos do plano principal
-                        self.matriz_operante = list(self.matriz_tempos)
+                        self.matriz_operante = list(self.matriz_principal)
                         break
