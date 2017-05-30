@@ -2,6 +2,7 @@ import platform
 import threading
 import random
 from tkinter import *
+from tkinter import ttk
 
 import time
 
@@ -23,6 +24,8 @@ class Principal:
         self.veiculos_ol = []  # fila de veiculos na via Oeste->Leste
         self.veiculos_lo = []  # fila de veiculos na via Leste->Oeste
 
+        self.semaforos = []
+
         self.velocidades = [8, 8, 11]   # 20km/h, 30km/h, 40km/h, em metros por segundo, valores aproximados
 
         # Configurações da tela/conteiner
@@ -40,12 +43,16 @@ class Principal:
         self.frame_canvas.pack(fill=BOTH, expand=YES)
 
         self.frame_canvas.columnconfigure(0, weight=1)
+        self.frame_canvas.columnconfigure(1, weight=1)
 
         self.canvas = Canvas(self.frame_canvas, width='1280', height='1280', scrollregion=(0, 0, 300, 450))
-        self.canvas.grid(row=0, column=0, stick=('n', 's'))
+        self.canvas.grid(row=0, column=0, columnspan=2, stick=('n', 's', 'w', 'e'))
 
         self.inserir_ruas()
         self.inserir_semaforos()
+        self.inserir_saidas()
+        self.inserir_entradas()
+        self.preencher_entradas()
 
         # self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_ns)
         # self.thread_veiculos_ns.setDaemon(True)
@@ -83,7 +90,7 @@ class Principal:
         anim_veiculos_lo.setDaemon(True)
         anim_veiculos_lo.start()
 
-        anim_semaforos = AnimSemaforos(self.canvas, [self.sem_ns, self.sem_ol, self.sem_sn, self.sem_lo])
+        anim_semaforos = AnimSemaforos(self.canvas, self.semaforos)
         anim_semaforos.setDaemon(True)
         anim_semaforos.start()
 
@@ -162,11 +169,16 @@ class Principal:
                                    self.i_r1[1] + Rua().comprimento - 35,
                                    "vermelho")
 
+        self.semaforos.append(self.sem_ns)
+
         self.sem_ol = Semaforo('sem_2', self.i_r2[0] + Rua().comprimento - 40)
 
         self.sem_ol.add_vertical(self.canvas, self.i_r2[0] + Rua().comprimento - 40,
                                  self.i_r2[1] + Rua().largura + 15,
                                  "verde")
+
+
+        self.semaforos.append(self.sem_ol)
 
         self.sem_sn = Semaforo('sem_3', self.i_r2[1] + Rua().largura + 10)
 
@@ -174,11 +186,301 @@ class Principal:
                                    self.i_r2[1] + Rua().largura + 10,
                                    "vermelho", 1)
 
+        self.semaforos.append(self.sem_sn)
+
         self.sem_lo = Semaforo('sem_4', self.i_r1[0] + Rua().largura)
 
         self.sem_lo.add_vertical(self.canvas, self.i_r1[0] + Rua().largura + 10,
                                  self.i_r1[1] + Rua().comprimento - Rua().largura - 15,
                                  "verde", 1)
+
+        self.semaforos.append(self.sem_lo)
+
+    def inserir_saidas(self):
+        """
+        Insere no gráfico os contadores de veículos
+        :return:
+        """
+
+        # Norte Sul
+        self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
+                                self.i_r1[1] + 10,
+                                text="Gerados: 0",
+                                anchor='w',
+                                tag='gerados_ns')
+        self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
+                                self.i_r1[1] + 30,
+                                text="Impedidos: 0",
+                                anchor='w',
+                                tag='imp_ns')
+
+        # Oeste Leste
+        self.canvas.create_text(self.i_r2[0],
+                                self.i_r2[1] + Rua().largura + 20,
+                                text="Gerados: 0",
+                                anchor='w',
+                                tag='gerados_ol')
+        self.canvas.create_text(self.i_r2[0],
+                                self.i_r2[1] + Rua().largura + 40,
+                                text="Impedidos: 0",
+                                anchor='w',
+                                tag='imp_ol')
+
+        # Sul Norte
+        self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
+                                self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - 40,
+                                text="Gerados: 0",
+                                anchor='w',
+                                tag='gerados_sn')
+        self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
+                                self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - 20,
+                                text="Impedidos: 0",
+                                anchor='w',
+                                tag='imp_sn')
+
+        # Leste Oeste
+        self.canvas.create_text(self.i_r2[0] + Rua().comprimento + Rua().largura + Rua().comprimento - 70,
+                                self.i_r2[1] + Rua().largura + 20,
+                                text="Gerados: 0",
+                                anchor='w',
+                                tag='gerados_lo')
+        self.canvas.create_text(self.i_r2[0] + + Rua().comprimento + Rua().largura + Rua().comprimento - 70,
+                                self.i_r2[1] + Rua().largura + 40,
+                                text="Impedidos: 0",
+                                anchor='w',
+                                tag='imp_lo')
+
+        # Total de veículos
+        self.canvas.create_text(self.i_r2[0] + + Rua().comprimento + Rua().largura + Rua().comprimento - 90,
+                                self.i_r2[1] + Rua().largura + 370,
+                                font=('Arial', 18),
+                                text="Total: 00",
+                                anchor='w',
+                                tag='total')
+
+        self.desenhar_grafico()
+
+    def inserir_entradas(self):
+        """
+
+        :return:
+        """
+
+        self.canvas.create_text(1308, 10, font=("Arial", 16), text='Geradores')
+
+        # GERADOR RUA 1
+        self.canvas.create_text(1308, 45, font=("Arial", 14), text='Rua 1:')
+
+        self.spin_carros_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_carros_ns.place(x=1308, y=80)
+
+        self.canvas.create_text(1348, 85, anchor='w', text='Carro(s) a cada')
+
+        self.spin_minutos_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_minutos_ns.place(x=1438, y=80)
+
+        self.canvas.create_text(1478, 85, anchor='w', text='Minuto(s)')
+
+        # GERADOR RUA 2
+        self.canvas.create_text(1308, self.i_r1[1] + 125, font=("Arial", 14), text='Rua 2:')
+
+        self.spin_carros_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_carros_ol.place(x=1308, y=160)
+
+        self.canvas.create_text(1348, 165, anchor='w', text='Carro(s) a cada')
+
+        self.spin_minutos_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_minutos_ol.place(x=1438, y=160)
+
+        self.canvas.create_text(1478, 165, anchor='w', text='Minuto(s)')
+
+        self.bt_enviar_seeder = Button(self.canvas, width=10, text="Enviar")
+        self.bt_enviar_seeder.place(x=1318, y=205)
+
+        # PLANO
+        self.canvas.create_text(1318, 255, font=("Arial", 16), text='Configuração')
+
+        self.canvas.create_text(1318, 285, anchor='w', text="Tipo:")
+        self.combo_plano = ttk.Combobox(self.canvas, width=10, value=('Principal', "Atuado"), state='readonly')
+        self.combo_plano.place(x=1388, y=280)
+
+        self.canvas.create_text(1498, 285, anchor='w', text="Ciclo:")
+        self.ciclo = Entry(self.canvas, width=6, bg='white')
+        self.ciclo.place(x=1543, y=280)
+
+        # GRUPOS
+
+        paragrafo_1 = 35
+        paragrafo_2 = 30
+        espac_interno = 30
+        espac_externo = 90
+        cor_inicial = ['verde', 'vermelho']
+
+        # Grupo 1
+        self.canvas.create_text(1318, 325, font=("Arial", 12), anchor='w', text='Grupo 1')
+
+        self.canvas.create_text(1318, 360, anchor='w', text='Cor Inicial:')
+        self.combo_ci_gp1 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
+        self.combo_ci_gp1.place(x=1318 + espac_externo, y=355)
+
+        self.canvas.create_text(1318, 360 + paragrafo_1, anchor='w', text='VD:')
+        self.tempo_vd_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g1.place(x=1318 + espac_interno, y=360 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo, 360 + paragrafo_1, anchor='w', text='AM:')
+        self.tempo_am_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g1.place(x=1318 + espac_externo + espac_interno, y=360 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo*2, 360 + paragrafo_1, anchor='w', text='VM:')
+        self.tempo_vm_g1 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g1.place(x=1318 + espac_externo*2 + espac_interno, y=360 + paragrafo_2)
+
+        # Grupo 2
+        self.canvas.create_text(1318, 460, font=("Arial", 12), anchor='w', text='Grupo 2')
+
+        self.canvas.create_text(1318, 495, anchor='w', text='Cor Inicial:')
+        self.combo_ci_gp2 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
+        self.combo_ci_gp2.place(x=1318 + espac_externo, y=490)
+
+        self.canvas.create_text(1318, 490 + paragrafo_1, anchor='w', text='VD:')
+        self.tempo_vd_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g2.place(x=1318 + espac_interno, y=490 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo, 490 + paragrafo_1, anchor='w', text='AM:')
+        self.tempo_am_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g2.place(x=1318 + espac_externo + espac_interno, y=490 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo*2, 490 + paragrafo_1, anchor='w', text='VM:')
+        self.tempo_vm_g2 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g2.place(x=1318 + espac_externo*2 + espac_interno, y=490 + paragrafo_2)
+
+        # Grupo 3
+        self.canvas.create_text(1318, 595, font=("Arial", 12), anchor='w', text='Grupo 3')
+
+        self.canvas.create_text(1318, 625, anchor='w', text='Cor Inicial:')
+        self.combo_ci_gp3 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
+        self.combo_ci_gp3.place(x=1318 + espac_externo, y=620)
+
+        self.canvas.create_text(1318, 620 + paragrafo_1, anchor='w', text='VD:')
+        self.tempo_vd_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g3.place(x=1318 + espac_interno, y=620 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo, 620 + paragrafo_1, anchor='w', text='AM:')
+        self.tempo_am_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g3.place(x=1318 + espac_externo + espac_interno, y=620 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo*2, 620 + paragrafo_1, anchor='w', text='VM:')
+        self.tempo_vm_g3 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g3.place(x=1318 + espac_externo*2 + espac_interno, y=620 + paragrafo_2)
+
+        # Grupo 4
+        self.canvas.create_text(1318, 730, font=("Arial", 12), anchor='w', text='Grupo 4')
+
+        self.canvas.create_text(1318, 765, anchor='w', text='Cor Inicial:')
+        self.combo_ci_gp4 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
+        self.combo_ci_gp4.place(x=1318 + espac_externo, y=760)
+
+        self.canvas.create_text(1318, 760 + paragrafo_1, anchor='w', text='VD:')
+        self.tempo_vd_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vd_g4.place(x=1318 + espac_interno, y=760 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo, 760 + paragrafo_1, anchor='w', text='AM:')
+        self.tempo_am_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_am_g4.place(x=1318 + espac_externo + espac_interno, y=760 + paragrafo_2)
+
+        self.canvas.create_text(1318 + espac_externo*2, 760 + paragrafo_1, anchor='w', text='VM:')
+        self.tempo_vm_g4 = Entry(self.canvas, width=6, bg='white')
+        self.tempo_vm_g4.place(x=1318 + espac_externo*2 + espac_interno, y=760 + paragrafo_2)
+
+        self.bt_enviar_plano = Button(self.canvas, text="Enviar", width=10)
+        self.bt_enviar_plano.place(x=1318, y=840)
+
+        # ATUADO
+
+        self.bt_atuado = Button(self.canvas, text="Atuar", width=10, height=3)
+        self.bt_atuado.place(x=250, y=800)
+
+    def desenhar_grafico(self):
+        """
+        Insere na interface o gráfico representativo do tempo configurado para os semáforos
+        :return:
+        """
+        expessura = 15              # Espessura da linha do gráfico
+        tamanho_total = 300         # Tamanho total do gráfico com as três cores
+        x_inicial = 1608            # Posição do primeiro gráfico
+        y_inicial = 390             # Posição do primeiro gráfico
+        paragrafo = 130             # distância entre os gráficos
+
+        dic_cores = {'verde': 'green',
+                     'amarelo': 'yellow',
+                     'vermelho': 'red'}
+
+        tempos_semaforo = AnimSemaforos(self.canvas, self.semaforos).matriz_operante    # Recupera o tempo operante
+        indice_tempos = AnimSemaforos(self.canvas, self.semaforos).indice_cor           # Auxiliar
+        seq_cores = AnimSemaforos(self.canvas, self.semaforos).seq_cores                # Auxiliar
+
+        # Remove o gráfico antigo
+        self.canvas.delete('cor_1')
+        self.canvas.delete('cor_2')
+        self.canvas.delete('cor_3')
+
+        indice = 0
+        for semaforo in self.semaforos:
+
+            cor = semaforo.cor_inicial                              # Cor da primeira parte
+            tempo = (tempos_semaforo[indice])[indice_tempos[cor]]   # Tempo da cor
+            ciclo = sum(tempos_semaforo[indice])                    # ciclo total do semáforo
+            escala = (tamanho_total * tempo)/ciclo                  # Conversão de tempo para pixels
+
+            fim_anterior = x_inicial
+
+            # Desenha o gráfico de acordo com os valores de tempo
+            for aux in range(0, 3):
+
+                self.canvas.create_rectangle(fim_anterior,
+                                             y_inicial + paragrafo * indice,
+                                             fim_anterior + escala,
+                                             y_inicial + expessura + paragrafo * indice,
+                                             fill=dic_cores[cor],
+                                             tag='cor_' + str(indice))
+
+                fim_anterior += escala  # inicio de uma cor = final de outra e final de outra = inicio + escala
+                cor = seq_cores[cor]
+                tempo = (tempos_semaforo[indice])[indice_tempos[cor]]
+                escala = (tamanho_total * tempo) / ciclo
+
+            indice += 1
+
+    def preencher_entradas(self):
+        """
+        Completa as entradas do sistema com os valores padrões
+        :return:
+        """
+
+        # PLANO E GRUPOS
+        tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_operante
+
+        self.ciclo.insert(0, sum(tempo_atual[0]))
+
+        self.combo_ci_gp1.set(self.sem_ns.cor_inicial)
+        self.tempo_vd_g1.insert(0, (tempo_atual[0])[0])
+        self.tempo_am_g1.insert(0, (tempo_atual[0])[1])
+        self.tempo_vm_g1.insert(0, (tempo_atual[0])[2])
+
+        self.combo_ci_gp2.set(self.sem_ol.cor_inicial)
+        self.tempo_vd_g2.insert(0, (tempo_atual[1])[0])
+        self.tempo_am_g2.insert(0, (tempo_atual[1])[1])
+        self.tempo_vm_g2.insert(0, (tempo_atual[1])[2])
+
+        self.combo_ci_gp3.set(self.sem_sn.cor_inicial)
+        self.tempo_vd_g3.insert(0, (tempo_atual[2])[0])
+        self.tempo_am_g3.insert(0, (tempo_atual[2])[1])
+        self.tempo_vm_g3.insert(0, (tempo_atual[2])[2])
+
+        self.combo_ci_gp4.set(self.sem_lo.cor_inicial)
+        self.tempo_vd_g4.insert(0, (tempo_atual[3])[0])
+        self.tempo_am_g4.insert(0, (tempo_atual[3])[1])
+        self.tempo_vm_g4.insert(0, (tempo_atual[3])[2])
 
     def seeder_veiculos(self):
         """
@@ -186,25 +488,26 @@ class Principal:
         :return:
         """
 
-        seeder_ns = 0   # Período para via Norte-Sul
-        seeder_ol = 0   # Período para a via Oeste-Leste
+        self.seeder_ns = 0   # Período para via Norte-Sul
+        self.seeder_ol = 0   # Período para a via Oeste-Leste
 
         while True:
 
-            if seeder_ns == 0:
+            if self.seeder_ns == 0:
 
-                seeder_ns = 1
+                self.seeder_ns = 1
                 self.inserir_veiculo_vertical()
 
             else:
-                seeder_ns -= 1
+                self.seeder_ns -= 1
 
-            if seeder_ol == 0:
-                seeder_ol = 1
+            if self.seeder_ol == 0:
+
+                self.seeder_ol = 1
                 self.inserir_veiculo_horizontal()
 
             else:
-                seeder_ol -= 1
+                self.seeder_ol -= 1
 
             time.sleep(1)
 
@@ -223,10 +526,12 @@ class Principal:
         if sentidos[sentido] == 'ns':
 
             # Verifica se não a via não está cheia, ou seja, se houver veículo na última posição da via,
-            # cancela a inserção de um novo
+            # cancela a inserção e acelera a geração de um novo veículo, para que seja adicionado a via o mais
+            # rápido possível
             for veiculo in self.veiculos_ns:
 
                 if veiculo.pos_atual[1] <= self.i_r1[1] + Veiculo().comprimento + Rua().metro:
+                    self.seeder_ns = 0
                     return
 
             veiculo = Veiculo(self.i_r1[0],
@@ -246,6 +551,7 @@ class Principal:
 
                 if veiculo.pos_atual[1] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - Veiculo().comprimento:
+                    self.seeder_ns = 0
                     return
 
             veiculo = Veiculo(self.i_r1[0] + Rua().largura - 16,
@@ -279,6 +585,7 @@ class Principal:
             for veiculo in self.veiculos_ol:
 
                 if veiculo.pos_atual[0] <= self.i_r2[0] + Veiculo().comprimento + Rua().metro:
+                    self.seeder_ol = 0
                     return
 
             veiculo = Veiculo(self.i_r2[0],
@@ -298,6 +605,7 @@ class Principal:
 
                 if veiculo.pos_atual[0] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[0] + Rua().comprimento + Rua().largura + Rua().comprimento + Veiculo().comprimento:
+                    self.seeder_ol = 0
                     return
 
             veiculo = Veiculo(self.i_r2[0] + Rua().comprimento + Rua().largura + Rua().comprimento,

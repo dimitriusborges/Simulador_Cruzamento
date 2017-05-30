@@ -14,9 +14,10 @@ class Semaforo:
         self.estados = ["verde", "amarelo", "vermelho"]
         self.tag = tag
         self.estado = 'vermelho'
+        self.cor_inicial = 'vermelho'
         self.posicao = pos
 
-    def add_horizontal(self, master: Canvas, x, y, estado, ordem=0):
+    def add_horizontal(self, master: Canvas, x, y, estado, ordem = 0):
         """
         Adiciona um semáforo horizontal na posição indicada
 
@@ -34,6 +35,8 @@ class Semaforo:
         largura_am = 1
         cor_verde = Cores().verde_off
         largura_vd = 1
+
+        self.cor_inicial = estado
 
         if estado is "vermelho":
             cor_vermelho = Cores().vermelho_on
@@ -83,6 +86,8 @@ class Semaforo:
         largura_am = 1
         cor_verde = Cores().verde_off
         largura_vd = 1
+
+        self.cor_inicial = estado
 
         if estado is "vermelho":
             cor_vermelho = Cores().vermelho_on

@@ -33,11 +33,11 @@ class AnimSemaforos(threading.Thread):
         self.matriz_operante = list(
             self.matriz_tempos)  # Matriz auxiliar. A leitura dos tempos durante a animação é feita nela
 
-        self.seq_estados = {"verde": "amarelo",  # Sequencia de cores que o foco deve assumir (verde->amarelo->vermelho)
+        self.seq_cores = {"verde": "amarelo",  # Sequencia de cores que o foco deve assumir (verde->amarelo->vermelho)
                             "amarelo": "vermelho",
                             "vermelho": "verde"}
 
-        self.estado_indice = {"verde": 0,  # Posicao que do tempo de cada cor na coluna da matriz
+        self.indice_cor = {"verde": 0,  # Posicao que do tempo de cada cor na coluna da matriz
                               "amarelo": 1,
                               "vermelho": 2}
 
@@ -62,7 +62,7 @@ class AnimSemaforos(threading.Thread):
             for semaforo in self.semaforos:
                 estado = semaforo.estado
 
-                indice_tempo = self.estado_indice[estado]
+                indice_tempo = self.indice_cor[estado]
 
                 self.contadores.append((self.matriz_operante[self.semaforos.index(semaforo)])[indice_tempo] * 1)
 
@@ -79,9 +79,9 @@ class AnimSemaforos(threading.Thread):
 
                         semaforo = self.semaforos[pointer]
 
-                        prox_estado = self.seq_estados[semaforo.estado]
+                        prox_estado = self.seq_cores[semaforo.estado]
                         semaforo.mudar_estado(self.master, prox_estado)
-                        indice_tempo = self.estado_indice[prox_estado]
+                        indice_tempo = self.indice_cor[prox_estado]
 
                         self.contadores[self.contadores.index(contador)] = (self.matriz_operante[pointer])[indice_tempo] * 1
 
