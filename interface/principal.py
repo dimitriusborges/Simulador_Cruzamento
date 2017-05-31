@@ -53,7 +53,7 @@ class Principal:
         self.inserir_semaforos()
         self.inserir_saidas()
         self.inserir_entradas()
-        self.preencher_entradas()
+        self.preencher_entradas(None)
 
         # self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_ns)
         # self.thread_veiculos_ns.setDaemon(True)
@@ -178,7 +178,6 @@ class Principal:
                                  self.i_r2[1] + Rua().largura + 15,
                                  "verde")
 
-
         self.semaforos.append(self.sem_ol)
 
         self.sem_sn = Semaforo('sem_3', self.i_r2[1] + Rua().largura + 10)
@@ -208,7 +207,7 @@ class Principal:
                                 self.i_r1[1] + 10,
                                 text="Gerados: 0",
                                 anchor='w',
-                                tag='gerados_ns')
+                                tag='ger_ns')
         self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
                                 self.i_r1[1] + 30,
                                 text="Impedidos: 0",
@@ -220,7 +219,7 @@ class Principal:
                                 self.i_r2[1] + Rua().largura + 20,
                                 text="Gerados: 0",
                                 anchor='w',
-                                tag='gerados_ol')
+                                tag='ger_ol')
         self.canvas.create_text(self.i_r2[0],
                                 self.i_r2[1] + Rua().largura + 40,
                                 text="Impedidos: 0",
@@ -232,7 +231,7 @@ class Principal:
                                 self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - 40,
                                 text="Gerados: 0",
                                 anchor='w',
-                                tag='gerados_sn')
+                                tag='ger_sn')
         self.canvas.create_text(self.i_r1[0] + Rua().largura + 20,
                                 self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - 20,
                                 text="Impedidos: 0",
@@ -244,7 +243,7 @@ class Principal:
                                 self.i_r2[1] + Rua().largura + 20,
                                 text="Gerados: 0",
                                 anchor='w',
-                                tag='gerados_lo')
+                                tag='ger_lo')
         self.canvas.create_text(self.i_r2[0] + + Rua().comprimento + Rua().largura + Rua().comprimento - 70,
                                 self.i_r2[1] + Rua().largura + 40,
                                 text="Impedidos: 0",
@@ -258,8 +257,6 @@ class Principal:
                                 text="Total: 00",
                                 anchor='w',
                                 tag='total')
-
-        self.desenhar_grafico()
 
     def inserir_entradas(self):
         """
@@ -303,6 +300,8 @@ class Principal:
 
         self.canvas.create_text(1318, 285, anchor='w', text="Tipo:")
         self.combo_plano = ttk.Combobox(self.canvas, width=10, value=('principal', "atuado"), state='readonly')
+        self.combo_plano.set('principal')
+        self.combo_plano.bind("<<ComboboxSelected>>", self.preencher_entradas)
         self.combo_plano.place(x=1388, y=280)
 
         self.canvas.create_text(1498, 285, anchor='w', text="Ciclo:")
@@ -401,7 +400,7 @@ class Principal:
         self.bt_atuado = Button(self.canvas, text="Atuar", width=10, height=3)
         self.bt_atuado.place(x=250, y=800)
 
-    def desenhar_grafico(self):
+    def desenhar_grafico(self, tempos):
         """
         Insere na interface o gráfico representativo do tempo configurado para os semáforos
         :return:
@@ -416,7 +415,7 @@ class Principal:
                      'amarelo': 'yellow',
                      'vermelho': 'red'}
 
-        tempos_semaforo = AnimSemaforos(self.canvas, self.semaforos).matriz_operante    # Recupera o tempo operante
+        tempos_semaforo =tempos                                                         # Recupera o tempo operante
         indice_tempos = AnimSemaforos(self.canvas, self.semaforos).indice_cor           # Auxiliar
         seq_cores = AnimSemaforos(self.canvas, self.semaforos).seq_cores                # Auxiliar
 
@@ -452,14 +451,18 @@ class Principal:
 
             indice += 1
 
-    def preencher_entradas(self):
+    def preencher_entradas(self, event):
         """
         Completa as entradas do sistema com os valores padrões
         :return:
         """
 
         # PLANO E GRUPOS
-        tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_operante
+
+        if self.combo_plano.get() == 'principal':
+            tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_principal
+        elif self.combo_plano.get() == 'atuado':
+            tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_atuado
 
         self.ciclo.delete(0, END)
         self.ciclo.insert(0, sum(tempo_atual[0]))
@@ -496,12 +499,13 @@ class Principal:
         self.tempo_vm_g4.delete(0, END)
         self.tempo_vm_g4.insert(0, (tempo_atual[3])[2])
 
+        self.desenhar_grafico(tempo_atual)
+
     def coletar_dados_grupos(self):
         """
         Coleta os valores de entrada para os semárofos enviados pelo usuário
         :return:
         """
-
         ciclo = int(self.ciclo.get())
 
         semaforo1 = [int(self.tempo_vd_g1.get()), int(self.tempo_am_g1.get()), int(self.tempo_vm_g1.get())]
@@ -587,6 +591,7 @@ class Principal:
 
                 if veiculo.pos_atual[1] <= self.i_r1[1] + Veiculo().comprimento + Rua().metro:
                     self.seeder_ns = 0
+                    self.incrementar_contador('imp_ns', "Impedidos")
                     return
 
             veiculo = Veiculo(self.i_r1[0],
@@ -599,6 +604,8 @@ class Principal:
             veiculo.torque = 1
             veiculo.adicionar_vertical(self.canvas, self.i_r1[0], self.i_r1[1])
             self.veiculos_ns.append(veiculo)
+            self.incrementar_contador('ger_ns', "Gerados")
+            self.incrementar_contador('total', "Total")
 
         elif sentidos[sentido] == 'sn':
 
@@ -607,6 +614,7 @@ class Principal:
                 if veiculo.pos_atual[1] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - Veiculo().comprimento:
                     self.seeder_ns = 0
+                    self.incrementar_contador('imp_sn', "Impedidos")
                     return
 
             veiculo = Veiculo(self.i_r1[0] + Rua().largura - 16,
@@ -620,6 +628,8 @@ class Principal:
             veiculo.adicionar_vertical(self.canvas, self.i_r1[0] + Rua().largura - 16,
                                        self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - Veiculo().comprimento)
             self.veiculos_sn.append(veiculo)
+            self.incrementar_contador("ger_sn", "Gerados")
+            self.incrementar_contador('total', "Total")
 
     def inserir_veiculo_horizontal(self):
         """
@@ -641,6 +651,7 @@ class Principal:
 
                 if veiculo.pos_atual[0] <= self.i_r2[0] + Veiculo().comprimento + Rua().metro:
                     self.seeder_ol = 0
+                    self.incrementar_contador('imp_ol', "Impedidos")
                     return
 
             veiculo = Veiculo(self.i_r2[0],
@@ -653,6 +664,8 @@ class Principal:
             veiculo.torque = 1
             veiculo.adicionar_horizontal(self.canvas, self.i_r2[0], self.i_r2[1] + 48)
             self.veiculos_ol.append(veiculo)
+            self.incrementar_contador('ger_ol', "Gerados")
+            self.incrementar_contador('total', "Total")
 
         elif sentidos[sentido] == 'lo':
 
@@ -661,6 +674,7 @@ class Principal:
                 if veiculo.pos_atual[0] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[0] + Rua().comprimento + Rua().largura + Rua().comprimento + Veiculo().comprimento:
                     self.seeder_ol = 0
+                    self.incrementar_contador('imp_lo', "Impedidos")
                     return
 
             veiculo = Veiculo(self.i_r2[0] + Rua().comprimento + Rua().largura + Rua().comprimento,
@@ -675,6 +689,20 @@ class Principal:
                                          self.i_r2[0] + Rua().comprimento + Rua().largura + Rua().comprimento,
                                          self.i_r2[1])
             self.veiculos_lo.append(veiculo)
+            self.incrementar_contador('ger_lo', "Gerados")
+            self.incrementar_contador('total', "Total")
+
+    def incrementar_contador(self, tag_contador: str, texto: str):
+        """
+        Incrementa os diversos contadores do sistema em 1
+        :param tag_contador: nome do contador em questão
+        :param texto: texto complementar
+        :return:
+        """
+
+        contador = (self.canvas.itemcget(tag_contador, 'text').split(" "))[1]
+        contador = int(contador) + 1
+        self.canvas.itemconfig(tag_contador, text=texto + ": " + str(contador))
 
     def iniciar_app(self):
         """

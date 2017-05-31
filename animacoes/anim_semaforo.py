@@ -19,10 +19,10 @@ class AnimSemaforos(threading.Thread):
         self.contadores = []  # Timer de cada foco
 
         # Tempos de cada foco (verde, amarelo, vermelho). Configuração de plano padrão
-        self.matriz_principal = [[10, 2, 28],  # NS
-                              [15, 2, 23],  # OL
-                              [10, 2, 28],  # SN
-                              [15, 2, 23]]  # LO
+        self.matriz_principal = [[0, 0, 40],  # NS
+                                 [15, 2, 23],  # OL
+                                 [10, 2, 28],  # SN 10 2 28
+                                 [15, 2, 23]]  # LO
 
         # Configuração de plano atuado
         self.matriz_atuado = [[4, 1, 8],  # NS
@@ -64,13 +64,12 @@ class AnimSemaforos(threading.Thread):
 
                 indice_tempo = self.indice_cor[estado]
 
-                self.contadores.append((self.matriz_operante[self.semaforos.index(semaforo)])[indice_tempo] * 1)
+                self.contadores.append((self.matriz_operante[self.semaforos.index(semaforo)])[indice_tempo])
 
             # Repetição principal
             while True:
 
-                pointer = 0  # navegador auxiliar
-
+                pointer = 0 # Variavel navegadora auxiliar, que relaciona a pos do contador com a pos do controlador
                 # Faz a contagem regressiva no timer de cada um dos semaforos
                 for contador in self.contadores:
 
@@ -83,12 +82,11 @@ class AnimSemaforos(threading.Thread):
                         semaforo.mudar_estado(self.master, prox_estado)
                         indice_tempo = self.indice_cor[prox_estado]
 
-                        self.contadores[self.contadores.index(contador)] = (self.matriz_operante[pointer])[indice_tempo] * 1
+                        self.contadores[pointer] = (self.matriz_operante[pointer])[indice_tempo]
 
                         # Todos os semáforos são controlados por um mesmo plano, com mesmo ciclo.
                         # Portanto, basta observar apenas um para identificar o fim do ciclo
                         if semaforo == self.semaforos[0]:
-
                             # Se o estado seguinte for igual ao inicial, indica reinicio de ciclo
                             if self.cor_inicial == prox_estado:
                                 self.flag_ciclo = True
