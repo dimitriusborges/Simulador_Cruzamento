@@ -19,7 +19,7 @@ class AnimSemaforos(threading.Thread):
         self.contadores = []  # Timer de cada foco
 
         # Tempos de cada foco (verde, amarelo, vermelho). Configuração de plano padrão
-        self.matriz_principal = [[0, 0, 40],  # NS
+        self.matriz_principal = [[10, 2, 28],  # NS
                                  [15, 2, 23],  # OL
                                  [10, 2, 28],  # SN 10 2 28
                                  [15, 2, 23]]  # LO
@@ -68,7 +68,6 @@ class AnimSemaforos(threading.Thread):
 
             # Repetição principal
             while True:
-
                 pointer = 0 # Variavel navegadora auxiliar, que relaciona a pos do contador com a pos do controlador
                 # Faz a contagem regressiva no timer de cada um dos semaforos
                 for contador in self.contadores:
@@ -79,10 +78,15 @@ class AnimSemaforos(threading.Thread):
                         semaforo = self.semaforos[pointer]
 
                         prox_estado = self.seq_cores[semaforo.estado]
-                        semaforo.mudar_estado(self.master, prox_estado)
                         indice_tempo = self.indice_cor[prox_estado]
-
                         self.contadores[pointer] = (self.matriz_operante[pointer])[indice_tempo]
+
+                        # Se uma cor tiver sido ignorada (tempo = 0), não altera a representação gráfica do semáforo,
+                        # e sim apenas a sua flag interna
+                        if self.contadores[pointer] > 0:
+                            semaforo.mudar_estado(self.master, prox_estado)
+                        else:
+                            semaforo.estado = prox_estado
 
                         # Todos os semáforos são controlados por um mesmo plano, com mesmo ciclo.
                         # Portanto, basta observar apenas um para identificar o fim do ciclo

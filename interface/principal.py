@@ -269,8 +269,10 @@ class Principal:
         # GERADOR RUA 1
         self.canvas.create_text(1308, 45, font=("Arial", 14), text='Rua 1:')
 
-        self.spin_carros_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
-        self.spin_carros_ns.place(x=1308, y=80)
+        self.spin_veiculos_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_veiculos_ns.place(x=1308, y=80)
+        self.spin_veiculos_ns.delete(0, END)
+        self.spin_veiculos_ns.insert(0, 30)
 
         self.canvas.create_text(1348, 85, anchor='w', text='Carro(s) a cada')
 
@@ -282,8 +284,10 @@ class Principal:
         # GERADOR RUA 2
         self.canvas.create_text(1308, self.i_r1[1] + 125, font=("Arial", 14), text='Rua 2:')
 
-        self.spin_carros_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
-        self.spin_carros_ol.place(x=1308, y=160)
+        self.spin_veiculos_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
+        self.spin_veiculos_ol.place(x=1308, y=160)
+        self.spin_veiculos_ol.delete(0, END)
+        self.spin_veiculos_ol.insert(0, 30)
 
         self.canvas.create_text(1348, 165, anchor='w', text='Carro(s) a cada')
 
@@ -397,7 +401,8 @@ class Principal:
 
         # ATUADO
 
-        self.bt_atuado = Button(self.canvas, text="Atuar", width=10, height=3)
+        self.bt_atuado = Button(self.canvas, text="Atuar", width=10, height=3,
+                                command=self.iniciar_atuado)
         self.bt_atuado.place(x=250, y=800)
 
     def desenhar_grafico(self, tempos):
@@ -535,15 +540,24 @@ class Principal:
         if self.combo_plano.get() == 'principal':
             self.anim_semaforos.matriz_principal.clear()
             self.anim_semaforos.matriz_principal = [semaforo1, semaforo2, semaforo3, semaforo4]
+            self.desenhar_grafico(self.anim_semaforos.matriz_principal)
         elif self.combo_plano.get() == 'atuado':
             self.anim_semaforos.matriz_atuado.clear()
             self.anim_semaforos.matriz_atuado = [semaforo1, semaforo2, semaforo3, semaforo4]
+            self.desenhar_grafico(self.anim_semaforos.matriz_atuado)
         else:
             messagebox.showerror("Tipo", "Antes, selecione um tipo de plano!")
 
+    def iniciar_atuado(self):
+        """
+        Ativa o plano atuado no sistema
+        :return:
+        """
+        self.anim_semaforos.flag_atuado = True
+
     def seeder_veiculos(self):
         """
-        Gera veículos no sistema periodicamente.
+        Gera veículos no sistema periodicamente, de acordo com os valores de entrada
         :return:
         """
 
@@ -553,8 +567,8 @@ class Principal:
         while True:
 
             if self.seeder_ns == 0:
-
-                self.seeder_ns = 1
+                # (Intervalo * 60 / Num Carros) = Intervalo de geração de um veículo
+                self.seeder_ns = (int(self.spin_minutos_ns.get())*60)/int(self.spin_veiculos_ns.get())
                 self.inserir_veiculo_vertical()
 
             else:
@@ -562,7 +576,7 @@ class Principal:
 
             if self.seeder_ol == 0:
 
-                self.seeder_ol = 1
+                self.seeder_ol = (int(self.spin_minutos_ol.get())*60)/int(self.spin_veiculos_ol.get())
                 self.inserir_veiculo_horizontal()
 
             else:
