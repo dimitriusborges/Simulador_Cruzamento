@@ -47,9 +47,9 @@ class Principal:
         self.frame_canvas.columnconfigure(1, weight=1)
         self.frame_canvas.rowconfigure(0, weight=1)
 
-        self.canvas = Canvas(self.frame_canvas, width='1280', height='1280', scrollregion=(0, 0, 1280*2, 1280*2))
+        self.canvas = Canvas(self.frame_canvas, width='1280', height='1280', scrollregion=(0, 0, 1280*2, 1480))
         self.canvas.grid(row=0, column=0, columnspan=2, stick=('n', 's', 'w', 'e'))
-
+        self.canvas.bind("<MouseWheel>", self.evento_scroll_bar)
 
         #Scrollbar
         self.scroll_vertical_canvas = Scrollbar(self.frame_canvas, relief='groove')
@@ -616,6 +616,20 @@ class Principal:
         """
         self.seeder_ol = (int(self.spin_minutos_ol.get()) * 60) / int(self.spin_veiculos_ol.get())
 
+    def evento_scroll_bar(self, event):
+        """
+        Gerencia o evento de Mouse Wheel na imagem do mapa
+        :param event: gerador do evento
+        :return:
+        """
+        direction = 0
+        # respond to Linux or Windows wheel event
+        if event.num == 5 or event.delta == -120:   # sobe a imagem (evento num 5 no linux ou delta -120 no windows)
+            direction = 1
+        if event.num == 4 or event.delta == 120:    # desce a imagem
+            direction = -1
+        self.canvas.yview_scroll(direction, "units")
+
     def seeder_veiculos(self):
         """
         Gera veículos no sistema periodicamente, de acordo com os valores de entrada
@@ -782,7 +796,7 @@ class Principal:
         Inicia a aplicação
         :return:
         """
-        self.root.minsize(640, 640)
+        self.root.minsize(600, 640)
         self.root.mainloop()
 
 iniciar = Principal()
