@@ -45,15 +45,32 @@ class Principal:
 
         self.frame_canvas.columnconfigure(0, weight=1)
         self.frame_canvas.columnconfigure(1, weight=1)
+        self.frame_canvas.rowconfigure(0, weight=1)
 
-        self.canvas = Canvas(self.frame_canvas, width='1280', height='1280', scrollregion=(0, 0, 300, 450))
+        self.canvas = Canvas(self.frame_canvas, width='1280', height='1280', scrollregion=(0, 0, 1280*2, 1280*2))
         self.canvas.grid(row=0, column=0, columnspan=2, stick=('n', 's', 'w', 'e'))
 
-        self.inserir_ruas()
+
+        #Scrollbar
+        self.scroll_vertical_canvas = Scrollbar(self.frame_canvas, relief='groove')
+        self.scroll_vertical_canvas.grid(row=0, column=3, sticky=('n', 's'))
+
+        self.canvas.config(yscrollcommand=self.scroll_vertical_canvas.set)
+        self.scroll_vertical_canvas.config(command=self.canvas.yview)
+
+        self.scroll_horizontal_canvas = Scrollbar(self.frame_canvas, relief='groove', orient=HORIZONTAL)
+        self.scroll_horizontal_canvas.grid(row=1, column=0, columnspan=2, sticky=('e', 'w'))
+
+        self.canvas.config(xscrollcommand=self.scroll_horizontal_canvas.set)
+        self.scroll_horizontal_canvas.config(command=self.canvas.xview)
+
         self.inserir_semaforos()
+        self.inserir_ruas()
         self.inserir_saidas()
         self.inserir_entradas()
         self.preencher_entradas(None)
+        self.coletar_seeder_r1()
+        self.coletar_seeder_r2()
 
         # self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_ns)
         # self.thread_veiculos_ns.setDaemon(True)
@@ -271,33 +288,44 @@ class Principal:
 
         self.spin_veiculos_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
         self.spin_veiculos_ns.place(x=1308, y=80)
+        self.spin_veiculos_ns.pack()
+        self.canvas.create_window(1328, 85, window=self.spin_veiculos_ns)
         self.spin_veiculos_ns.delete(0, END)
         self.spin_veiculos_ns.insert(0, 30)
 
         self.canvas.create_text(1348, 85, anchor='w', text='Carro(s) a cada')
 
         self.spin_minutos_ns = Spinbox(self.canvas, width=3, from_=1, to=99)
-        self.spin_minutos_ns.place(x=1438, y=80)
+        self.spin_minutos_ns.pack()
+        self.canvas.create_window(1458, 85, window=self.spin_minutos_ns)
 
         self.canvas.create_text(1478, 85, anchor='w', text='Minuto(s)')
+
+        self.bt_enviar_seeder_r1 = Button(self.canvas, width=10, text="Enviar",
+                                          command=self.coletar_seeder_r1)
+        self.bt_enviar_seeder_r1.pack()
+        self.canvas.create_window(1608, 85, window=self.bt_enviar_seeder_r1)
 
         # GERADOR RUA 2
         self.canvas.create_text(1308, self.i_r1[1] + 125, font=("Arial", 14), text='Rua 2:')
 
         self.spin_veiculos_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
-        self.spin_veiculos_ol.place(x=1308, y=160)
+        self.spin_veiculos_ol.pack()
+        self.canvas.create_window(1328, 165, window=self.spin_veiculos_ol)
         self.spin_veiculos_ol.delete(0, END)
         self.spin_veiculos_ol.insert(0, 30)
 
         self.canvas.create_text(1348, 165, anchor='w', text='Carro(s) a cada')
 
         self.spin_minutos_ol = Spinbox(self.canvas, width=3, from_=1, to=99)
-        self.spin_minutos_ol.place(x=1438, y=160)
+        self.spin_minutos_ol.pack()
+        self.canvas.create_window(1458, 165, window=self.spin_minutos_ol)
 
         self.canvas.create_text(1478, 165, anchor='w', text='Minuto(s)')
 
-        self.bt_enviar_seeder = Button(self.canvas, width=10, text="Enviar")
-        self.bt_enviar_seeder.place(x=1318, y=205)
+        self.bt_enviar_seeder_r2 = Button(self.canvas, width=10, text="Enviar", command=self.coletar_seeder_r2)
+        self.bt_enviar_seeder_r2.pack()
+        self.canvas.create_window(1608, 165, window=self.bt_enviar_seeder_r2)
 
         # PLANO
         self.canvas.create_text(1318, 255, font=("Arial", 16), text='Configuração')
@@ -306,11 +334,13 @@ class Principal:
         self.combo_plano = ttk.Combobox(self.canvas, width=10, value=('principal', "atuado"), state='readonly')
         self.combo_plano.set('principal')
         self.combo_plano.bind("<<ComboboxSelected>>", self.preencher_entradas)
-        self.combo_plano.place(x=1388, y=280)
+        self.combo_plano.pack()
+        self.canvas.create_window(1428, 285, window=self.combo_plano)
 
-        self.canvas.create_text(1498, 285, anchor='w', text="Ciclo:")
+        self.canvas.create_text(1493, 285, anchor='w', text="Ciclo:")
         self.ciclo = Spinbox(self.canvas, width=6, from_=1, to=255, bg='white')
-        self.ciclo.place(x=1543, y=280)
+        self.ciclo.pack()
+        self.canvas.create_window(1563, 285, window=self.ciclo)
 
         # GRUPOS
 
@@ -325,85 +355,102 @@ class Principal:
 
         self.canvas.create_text(1318, 360, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp1 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
-        self.combo_ci_gp1.place(x=1318 + espac_externo, y=355)
+        self.combo_ci_gp1.pack()
+        self.canvas.create_window(1338 + espac_externo, 360, window=self.combo_ci_gp1)
 
         self.canvas.create_text(1318, 360 + paragrafo_1, anchor='w', text='VD:')
         self.tempo_vd_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vd_g1.place(x=1318 + espac_interno, y=360 + paragrafo_2)
+        self.tempo_vd_g1.pack()
+        self.canvas.create_window(1338 + espac_interno, 365 + paragrafo_2, window=self.tempo_vd_g1)
 
         self.canvas.create_text(1318 + espac_externo, 360 + paragrafo_1, anchor='w', text='AM:')
         self.tempo_am_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_am_g1.place(x=1318 + espac_externo + espac_interno, y=360 + paragrafo_2)
+        self.tempo_am_g1.pack()
+        self.canvas.create_window(1338 + espac_externo + espac_interno, 365 + paragrafo_2, window=self.tempo_am_g1)
 
         self.canvas.create_text(1318 + espac_externo*2, 360 + paragrafo_1, anchor='w', text='VM:')
         self.tempo_vm_g1 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vm_g1.place(x=1318 + espac_externo*2 + espac_interno, y=360 + paragrafo_2)
+        self.tempo_vm_g1.pack()
+        self.canvas.create_window(1338 + espac_externo*2 + espac_interno, 365 + paragrafo_2, window=self.tempo_vm_g1)
 
         # Grupo 2
         self.canvas.create_text(1318, 460, font=("Arial", 12), anchor='w', text='Semáforo 2')
 
         self.canvas.create_text(1318, 495, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp2 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
-        self.combo_ci_gp2.place(x=1318 + espac_externo, y=490)
+        self.combo_ci_gp2.pack()
+        self.canvas.create_window(1338 + espac_externo, 495, window=self.combo_ci_gp2)
 
         self.canvas.create_text(1318, 490 + paragrafo_1, anchor='w', text='VD:')
         self.tempo_vd_g2 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vd_g2.place(x=1318 + espac_interno, y=490 + paragrafo_2)
+        self.tempo_vd_g2.pack()
+        self.canvas.create_window(1338 + espac_interno, 495 + paragrafo_2, window=self.tempo_vd_g2)
 
         self.canvas.create_text(1318 + espac_externo, 490 + paragrafo_1, anchor='w', text='AM:')
         self.tempo_am_g2 =Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_am_g2.place(x=1318 + espac_externo + espac_interno, y=490 + paragrafo_2)
+        self.tempo_am_g2.pack()
+        self.canvas.create_window(1338 + espac_externo + espac_interno, 495 + paragrafo_2, window=self.tempo_am_g2)
 
         self.canvas.create_text(1318 + espac_externo*2, 490 + paragrafo_1, anchor='w', text='VM:')
         self.tempo_vm_g2 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vm_g2.place(x=1318 + espac_externo*2 + espac_interno, y=490 + paragrafo_2)
+        self.tempo_vm_g2.pack()
+        self.canvas.create_window(1338 + espac_externo*2 + espac_interno, 495 + paragrafo_2, window=self.tempo_vm_g2)
 
         # Grupo 3
         self.canvas.create_text(1318, 595, font=("Arial", 12), anchor='w', text='Semáforo 3')
 
         self.canvas.create_text(1318, 625, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp3 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
-        self.combo_ci_gp3.place(x=1318 + espac_externo, y=620)
+        self.combo_ci_gp3.pack()
+        self.canvas.create_window(1338 + espac_externo, 625, window=self.combo_ci_gp3)
 
         self.canvas.create_text(1318, 620 + paragrafo_1, anchor='w', text='VD:')
         self.tempo_vd_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vd_g3.place(x=1318 + espac_interno, y=620 + paragrafo_2)
+        self.tempo_vd_g3.pack()
+        self.canvas.create_window(1338 + espac_interno, 620 + paragrafo_2, window=self.tempo_vd_g3)
 
         self.canvas.create_text(1318 + espac_externo, 620 + paragrafo_1, anchor='w', text='AM:')
         self.tempo_am_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_am_g3.place(x=1318 + espac_externo + espac_interno, y=620 + paragrafo_2)
+        self.tempo_am_g3.pack()
+        self.canvas.create_window(1338 + espac_externo + espac_interno, 625 + paragrafo_2, window=self.tempo_am_g3)
 
         self.canvas.create_text(1318 + espac_externo*2, 620 + paragrafo_1, anchor='w', text='VM:')
         self.tempo_vm_g3 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vm_g3.place(x=1318 + espac_externo*2 + espac_interno, y=620 + paragrafo_2)
+        self.tempo_vm_g3.pack()
+        self.canvas.create_window(1338 + espac_externo*2 + espac_interno, 625 + paragrafo_2, window=self.tempo_vm_g3)
 
         # Grupo 4
-        self.canvas.create_text(1318, 730, font=("Arial", 12), anchor='w', text='Semáforo 4')
+        self.canvas.create_text(1318, 726, font=("Arial", 12), anchor='w', text='Semáforo 4')
 
-        self.canvas.create_text(1318, 765, anchor='w', text='Cor Inicial:')
+        self.canvas.create_text(1318, 756, anchor='w', text='Cor Inicial:')
         self.combo_ci_gp4 = ttk.Combobox(self.canvas, width=10, value=cor_inicial, state='readonly')
-        self.combo_ci_gp4.place(x=1318 + espac_externo, y=760)
+        self.combo_ci_gp4.pack()
+        self.canvas.create_window(1338 + espac_externo, 756, window=self.combo_ci_gp4)
 
-        self.canvas.create_text(1318, 760 + paragrafo_1, anchor='w', text='VD:')
+        self.canvas.create_text(1318, 751 + paragrafo_1, anchor='w', text='VD:')
         self.tempo_vd_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vd_g4.place(x=1318 + espac_interno, y=760 + paragrafo_2)
+        self.tempo_vd_g4.pack()
+        self.canvas.create_window(1338 + espac_interno, 756 + paragrafo_2, window=self.tempo_vd_g4)
 
-        self.canvas.create_text(1318 + espac_externo, 760 + paragrafo_1, anchor='w', text='AM:')
+        self.canvas.create_text(1318 + espac_externo, 751 + paragrafo_1, anchor='w', text='AM:')
         self.tempo_am_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_am_g4.place(x=1318 + espac_externo + espac_interno, y=760 + paragrafo_2)
+        self.tempo_am_g4.pack()
+        self.canvas.create_window(1338 + espac_externo + espac_interno, 756 + paragrafo_2, window=self.tempo_am_g4)
 
-        self.canvas.create_text(1318 + espac_externo*2, 760 + paragrafo_1, anchor='w', text='VM:')
+        self.canvas.create_text(1318 + espac_externo*2, 751 + paragrafo_1, anchor='w', text='VM:')
         self.tempo_vm_g4 = Spinbox(self.canvas, width=6, from_=0, to=255, bg='white')
-        self.tempo_vm_g4.place(x=1318 + espac_externo*2 + espac_interno, y=760 + paragrafo_2)
+        self.tempo_vm_g4.pack()
+        self.canvas.create_window(1338 + espac_externo*2 + espac_interno, 756 + paragrafo_2, window=self.tempo_vm_g4)
 
-        self.bt_enviar_plano = Button(self.canvas, text="Enviar", width=10, command=self.coletar_dados_grupos)
-        self.bt_enviar_plano.place(x=1318, y=840)
+        self.bt_enviar_plano = Button(self.canvas, text="enviar", width=10, command=self.coletar_dados_grupos)
+        self.bt_enviar_plano.pack()
+        self.canvas.create_window(1338, 840, window=self.bt_enviar_plano)
 
         # ATUADO
-
         self.bt_atuado = Button(self.canvas, text="Atuar", width=10, height=3,
                                 command=self.iniciar_atuado)
-        self.bt_atuado.place(x=250, y=800)
+        self.bt_atuado.pack()
+        self.canvas.create_window(250, 800, window=self.bt_atuado)
 
     def desenhar_grafico(self, tempos):
         """
@@ -412,7 +459,7 @@ class Principal:
         """
         expessura = 15              # Espessura da linha do gráfico
         tamanho_total = 300         # Tamanho total do gráfico com as três cores
-        x_inicial = 1608            # Posição do primeiro gráfico
+        x_inicial = 1590            # Posição do primeiro gráfico
         y_inicial = 390             # Posição do primeiro gráfico
         paragrafo = 130             # distância entre os gráficos
 
@@ -555,32 +602,44 @@ class Principal:
         """
         self.anim_semaforos.flag_atuado = True
 
+    def coletar_seeder_r1(self):
+        """
+        Doleta os dados do gerador de veiculos para a rua 1
+        :return:
+        """
+        self.seeder_ns = (int(self.spin_minutos_ns.get()) * 60) / int(self.spin_veiculos_ns.get())
+
+    def coletar_seeder_r2(self):
+        """
+        Coleta os dados do gerador de veiculos para a rua 2
+        :return:
+        """
+        self.seeder_ol = (int(self.spin_minutos_ol.get()) * 60) / int(self.spin_veiculos_ol.get())
+
     def seeder_veiculos(self):
         """
         Gera veículos no sistema periodicamente, de acordo com os valores de entrada
         :return:
         """
-
-        self.seeder_ns = 0   # Período para via Norte-Sul
-        self.seeder_ol = 0   # Período para a via Oeste-Leste
+        seeder_ns = 0
+        seeder_ol = 0
 
         while True:
 
-            if self.seeder_ns == 0:
-                # (Intervalo * 60 / Num Carros) = Intervalo de geração de um veículo
-                self.seeder_ns = (int(self.spin_minutos_ns.get())*60)/int(self.spin_veiculos_ns.get())
+            if seeder_ns == 0:
+
+                seeder_ns = self.seeder_ns
                 self.inserir_veiculo_vertical()
 
             else:
-                self.seeder_ns -= 1
+                seeder_ns -= 1
 
-            if self.seeder_ol == 0:
-
-                self.seeder_ol = (int(self.spin_minutos_ol.get())*60)/int(self.spin_veiculos_ol.get())
+            if seeder_ol == 0:
+                seeder_ol = self.seeder_ol
                 self.inserir_veiculo_horizontal()
 
             else:
-                self.seeder_ol -= 1
+                seeder_ol -= 1
 
             time.sleep(1)
 
