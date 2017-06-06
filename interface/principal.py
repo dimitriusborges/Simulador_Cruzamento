@@ -1,17 +1,22 @@
+import os
+import time
+import random
 import platform
 import threading
-import random
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 
-import time
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'objetos'))
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'animacoes'))
 
 from anim_veiculo import AnimVeiculos
 from veiculo import Veiculo
 from semaforo import Semaforo
 from anim_semaforo import AnimSemaforos
 from rua import Rua
+
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'objetos'))
 
 
 class Principal:
@@ -27,7 +32,7 @@ class Principal:
 
         self.semaforos = []
 
-        self.velocidades = [8, 8, 11]   # 20km/h, 30km/h, 40km/h, em metros por segundo, valores aproximados
+        self.velocidades = [8, 11, 11]   # 30km/h, 40km/h, 40km/h, em metros por segundo, valores aproximados
 
         # Configurações da tela/conteiner
         self.root = Tk()
@@ -187,6 +192,10 @@ class Principal:
                                    self.i_r1[1] + Rua().comprimento - 35,
                                    "vermelho")
 
+        self.canvas.create_text(self.i_r1[0] - 104,
+                                self.i_r1[1] + Rua().comprimento - 23,
+                                font=("Arial", 14), text="S1")
+
         self.semaforos.append(self.sem_ns)
 
         self.sem_ol = Semaforo('sem_2', self.i_r2[0] + Rua().comprimento - 40)
@@ -194,6 +203,10 @@ class Principal:
         self.sem_ol.add_vertical(self.canvas, self.i_r2[0] + Rua().comprimento - 40,
                                  self.i_r2[1] + Rua().largura + 15,
                                  "verde")
+
+        self.canvas.create_text(self.i_r2[0] + Rua().comprimento - 27,
+                                self.i_r2[1] + Rua().largura + 105,
+                                font=("Arial", 14), text="S2")
 
         self.semaforos.append(self.sem_ol)
 
@@ -203,6 +216,10 @@ class Principal:
                                    self.i_r2[1] + Rua().largura + 10,
                                    "vermelho", 1)
 
+        self.canvas.create_text(self.i_r2[0] + Rua().comprimento + Rua().largura + 101,
+                                self.i_r2[1] + Rua().largura + 22,
+                                font=("Arial", 14), text="S3")
+
         self.semaforos.append(self.sem_sn)
 
         self.sem_lo = Semaforo('sem_4', self.i_r1[0] + Rua().largura)
@@ -210,6 +227,10 @@ class Principal:
         self.sem_lo.add_vertical(self.canvas, self.i_r1[0] + Rua().largura + 10,
                                  self.i_r1[1] + Rua().comprimento - Rua().largura - 15,
                                  "verde", 1)
+
+        self.canvas.create_text(self.i_r1[0] + Rua().largura + 25,
+                                self.i_r1[1] + Rua().comprimento - Rua().largura - 27,
+                                font=("Arial", 14), text="S4")
 
         self.semaforos.append(self.sem_lo)
 
@@ -291,7 +312,7 @@ class Principal:
         self.spin_veiculos_ns.pack()
         self.canvas.create_window(1328, 85, window=self.spin_veiculos_ns)
         self.spin_veiculos_ns.delete(0, END)
-        self.spin_veiculos_ns.insert(0, 30)
+        self.spin_veiculos_ns.insert(0, 5)
 
         self.canvas.create_text(1348, 85, anchor='w', text='Carro(s) a cada')
 
@@ -313,7 +334,7 @@ class Principal:
         self.spin_veiculos_ol.pack()
         self.canvas.create_window(1328, 165, window=self.spin_veiculos_ol)
         self.spin_veiculos_ol.delete(0, END)
-        self.spin_veiculos_ol.insert(0, 30)
+        self.spin_veiculos_ol.insert(0, 10)
 
         self.canvas.create_text(1348, 165, anchor='w', text='Carro(s) a cada')
 

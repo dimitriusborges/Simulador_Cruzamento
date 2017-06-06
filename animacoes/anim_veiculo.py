@@ -131,7 +131,6 @@ class AnimVeiculos(threading.Thread):
 
                 if prox_pos[1] + Veiculo().comprimento + Rua().metro >= veiculo_a_frente.pos_atual[1]:
                     veiculo.velocidade = veiculo_a_frente.velocidade
-                    #print("ocupado")
                     return False
 
             if veiculo.sentido == 'sn':
@@ -139,13 +138,11 @@ class AnimVeiculos(threading.Thread):
                 if prox_pos[1] - Veiculo().comprimento - Rua().metro <= \
                    veiculo_a_frente.pos_atual[1]:
                     veiculo.velocidade = veiculo_a_frente.velocidade
-                    #print("ocupado")
                     return False
 
             if veiculo.sentido == 'ol':
                 if prox_pos[0] + Veiculo().comprimento + Rua().metro >= veiculo_a_frente.pos_atual[0]:
                     veiculo.velocidade = veiculo_a_frente.velocidade
-                    #print("ocupado")
                     return False
 
             if veiculo.sentido == 'lo':

@@ -1,5 +1,8 @@
+import os
 from tkinter import Canvas
+from tkinter import *
 
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'colecoes'))
 
 class Veiculo:
     def __init__(self, x_i=0, y_i=0, x_f=0, y_f=0, cor='blue', sentido='ns'):
