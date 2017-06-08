@@ -11,20 +11,21 @@ class Semaforo:
         :param pos: posicão do semáforo no eixo X ou Y, para fins de localização
         """
 
-        self.estados = ["verde", "amarelo", "vermelho"]
-        self.tag = tag
-        self.estado = 'vermelho'
-        self.cor_inicial = 'vermelho'
-        self.posicao = pos
+        self.estados = ["verde", "amarelo", "vermelho"]     # 3 cores e estados que o sistema pode assumir
+        self.tag = tag                                      # Nome único do semáforo
+        self.foco = 'vermelho'                              # Foco ativo na representação gráfica
+        self.estado = self.foco                             # estado real atual do sistema
+        self.cor_inicial = 'vermelho'                       # Cor inicial do ciclo
+        self.posicao = pos                                  # Posição no eixo X ou Y do semáforo
 
-    def add_horizontal(self, master: Canvas, x, y, estado, ordem = 0):
+    def add_horizontal(self, master: Canvas, x, y, cor_inicial, ordem=0):
         """
         Adiciona um semáforo horizontal na posição indicada
 
         :param master: Conteiner
         :param x: Coordenada X
         :param y: Coordenada Y
-        :param estado = cor atual do semaforo
+        :param cor_inicial = cor atual do semaforo
         :return:
         """
         semaforos = []
@@ -36,20 +37,22 @@ class Semaforo:
         cor_verde = Cores().verde_off
         largura_vd = 1
 
-        self.cor_inicial = estado
+        self.cor_inicial = cor_inicial
 
-        if estado is "vermelho":
+        if cor_inicial is "vermelho":
             cor_vermelho = Cores().vermelho_on
             largura_vm = 2
-            self.estado = "vermelho"
-        if estado is "amarelo":
+            self.foco = "vermelho"
+        if cor_inicial is "amarelo":
             cor_amarelo = Cores().amarelo_on
             largura_am = 2
-            self.estado = "amarelo"
-        if estado is "verde":
+            self.foco = "amarelo"
+        if cor_inicial is "verde":
             cor_verde = Cores().verde_on
             largura_vd = 2
-            self.estado = "verde"
+            self.foco = "verde"
+
+        self.estado = self.foco
 
         if ordem == 0:
             semaforos.append(master.create_oval(x, y, x + 25, y + 25, fill=cor_vermelho, tag=self.tag + '_vm',
@@ -68,14 +71,14 @@ class Semaforo:
 
         return semaforos
 
-    def add_vertical(self, master: Canvas, x, y, estado, ordem=0):
+    def add_vertical(self, master: Canvas, x, y, cor_inicial, ordem=0):
         """
         Adiciona um semáforo vertical na posição indicada
 
         :param master: Conteiner
         :param x: Coordenada X
         :param y: Coordenada Y
-        :param estado = cor atual do semaforo
+        :param cor_inicial = cor atual do semaforo
         :return:
         """
         semaforos = []
@@ -87,20 +90,22 @@ class Semaforo:
         cor_verde = Cores().verde_off
         largura_vd = 1
 
-        self.cor_inicial = estado
+        self.cor_inicial = cor_inicial
 
-        if estado is "vermelho":
+        if cor_inicial is "vermelho":
             cor_vermelho = Cores().vermelho_on
             largura_vm = 2
-            self.estado = "vermelho"
-        if estado is "amarelo":
+            self.foco = "vermelho"
+        if cor_inicial is "amarelo":
             cor_amarelo = Cores().amarelo_on
             largura_am = 2
-            self.estado = "amarelo"
-        if estado is "verde":
+            self.foco = "amarelo"
+        if cor_inicial is "verde":
             cor_verde = Cores().verde_on
             largura_vd = 2
-            self.estado = "verde"
+            self.foco = "verde"
+
+        self.estado = self.foco
 
         if ordem == 0:
             semaforos.append(master.create_oval(x, y, x + 25, y + 25, fill=cor_vermelho, tag=self.tag + '_vm',
@@ -119,12 +124,12 @@ class Semaforo:
 
         return semaforos
 
-    def mudar_estado(self, master, estado):
+    def mudar_foco(self, master, foco):
         """
-        Altera o estado do semáforo
+        Altera o foco ativo do semáforo
 
         :param master: Conteiner
-        :param estado = cor atual do semaforo
+        :param foco = cor que o semáforo irá assumir
         :return:
         """
 
@@ -135,20 +140,19 @@ class Semaforo:
         cor_verde = Cores().verde_off
         largura_vd = 1
 
-        if estado is "vermelho":
+        if foco is "vermelho":
             cor_vermelho = Cores().vermelho_on
             largura_vm = 2
-            self.estado = 'vermelho'
-        if estado is "amarelo":
+            self.foco = 'vermelho'
+        if foco is "amarelo":
             cor_amarelo = Cores().amarelo_on
             largura_am = 2
-            self.estado = 'amarelo'
-        if estado is "verde":
+            self.foco = 'amarelo'
+        if foco is "verde":
             cor_verde = Cores().verde_on
             largura_vd = 2
-            self.estado = 'verde'
+            self.foco = 'verde'
 
         master.itemconfig(self.tag + '_vm', fill=cor_vermelho, width=largura_vm)
         master.itemconfig(self.tag + '_am', fill=cor_amarelo, width=largura_am)
         master.itemconfig(self.tag + '_vd', fill=cor_verde, width=largura_vd)
-

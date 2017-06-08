@@ -71,28 +71,17 @@ class Principal:
 
         self.inserir_semaforos()
         self.inserir_ruas()
+
+        self.anim_semaforos = AnimSemaforos(self.canvas, self.semaforos)
+        self.anim_semaforos.setDaemon(True)
+        self.anim_semaforos.start()
+
         self.inserir_saidas()
         self.inserir_entradas()
         self.preencher_entradas(None)
         self.coletar_seeder_r1()
         self.coletar_seeder_r2()
 
-        # self.thread_veiculos_ns = threading.Thread(target=self.animacao_carros_ns)
-        # self.thread_veiculos_ns.setDaemon(True)
-        # self.thread_veiculos_ns.start()
-        #
-        # self.thread_veiculos_sn = threading.Thread(target=self.animacao_carros_sn)
-        # self.thread_veiculos_sn.setDaemon(True)
-        # self.thread_veiculos_sn.start()
-        #
-        # self.thread_veiculos_ol = threading.Thread(target=self.animacao_carros_ol)
-        # self.thread_veiculos_ol.setDaemon(True)
-        # self.thread_veiculos_ol.start()
-        #
-        # self.thread_veiculos_lo = threading.Thread(target=self.animacao_carros_lo)
-        # self.thread_veiculos_lo.setDaemon(True)
-        # self.thread_veiculos_lo.start()
-        #
         self.thread_seeder_veiculos = threading.Thread(target=self.seeder_veiculos)
         self.thread_seeder_veiculos.setDaemon(True)
         self.thread_seeder_veiculos.start()
@@ -112,10 +101,6 @@ class Principal:
         anim_veiculos_lo = AnimVeiculos(self.canvas, self.sem_lo, self.veiculos_lo, 'lo')
         anim_veiculos_lo.setDaemon(True)
         anim_veiculos_lo.start()
-
-        self.anim_semaforos = AnimSemaforos(self.canvas, self.semaforos)
-        self.anim_semaforos.setDaemon(True)
-        self.anim_semaforos.start()
 
     def inserir_ruas(self):
         """
@@ -463,6 +448,7 @@ class Principal:
         self.tempo_vm_g4.pack()
         self.canvas.create_window(1338 + espac_externo*2 + espac_interno, 756 + paragrafo_2, window=self.tempo_vm_g4)
 
+        # Enviar
         self.bt_enviar_plano = Button(self.canvas, text="enviar", width=10, command=self.coletar_dados_grupos)
         self.bt_enviar_plano.pack()
         self.canvas.create_window(1338, 840, window=self.bt_enviar_plano)
@@ -531,11 +517,11 @@ class Principal:
         """
 
         # PLANO E GRUPOS
-
+        tempo_atual = []
         if self.combo_plano.get() == 'principal':
-            tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_principal
+            tempo_atual = self.anim_semaforos.matriz_principal
         elif self.combo_plano.get() == 'atuado':
-            tempo_atual = AnimSemaforos(self.canvas, self.semaforos).matriz_atuado
+            tempo_atual = self.anim_semaforos.matriz_atuado
 
         self.ciclo.delete(0, END)
         self.ciclo.insert(0, sum(tempo_atual[0]))
@@ -609,6 +595,7 @@ class Principal:
             self.anim_semaforos.matriz_principal.clear()
             self.anim_semaforos.matriz_principal = [semaforo1, semaforo2, semaforo3, semaforo4]
             self.desenhar_grafico(self.anim_semaforos.matriz_principal)
+
         elif self.combo_plano.get() == 'atuado':
             self.anim_semaforos.matriz_atuado.clear()
             self.anim_semaforos.matriz_atuado = [semaforo1, semaforo2, semaforo3, semaforo4]

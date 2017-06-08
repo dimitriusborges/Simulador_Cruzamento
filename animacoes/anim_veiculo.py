@@ -110,7 +110,7 @@ class AnimVeiculos(threading.Thread):
             if atual <= semaforo.posicao:
 
                 if limite_semaforo >= semaforo.posicao:
-                    if semaforo.estado is not "verde":
+                    if semaforo.foco is not "verde":
                         return False
 
         # Sentido de - no plano usa <=
@@ -119,7 +119,7 @@ class AnimVeiculos(threading.Thread):
             if atual >= semaforo.posicao:
 
                 if limite_semaforo - Veiculo().comprimento <= semaforo.posicao:
-                    if semaforo.estado is not "verde":
+                    if semaforo.foco is not "verde":
                         return False
 
         # Verifica se a próxima posição não está ocupada por outro veículo
