@@ -568,24 +568,28 @@ class Principal:
         ciclo = int(self.ciclo.get())
 
         semaforo1 = [int(self.tempo_vd_g1.get()), int(self.tempo_am_g1.get()), int(self.tempo_vm_g1.get())]
+        s1_cor = self.combo_ci_gp1.get()
 
         if sum(semaforo1) != ciclo:
             messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 1 são diferentes do ciclo!")
             return
 
         semaforo2 = [int(self.tempo_vd_g2.get()), int(self.tempo_am_g2.get()), int(self.tempo_vm_g2.get())]
+        s2_cor = self.combo_ci_gp2.get()
 
         if sum(semaforo2) != ciclo:
             messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 2 são diferentes do ciclo!")
             return
 
         semaforo3 = [int(self.tempo_vd_g3.get()), int(self.tempo_am_g3.get()), int(self.tempo_vm_g3.get())]
+        s3_cor = self.combo_ci_gp3.get()
 
         if sum(semaforo3) != ciclo:
             messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 3 são diferentes do ciclo!")
             return
 
         semaforo4 = [int(self.tempo_vd_g4.get()), int(self.tempo_am_g4.get()), int(self.tempo_vm_g4.get())]
+        s4_cor = self.combo_ci_gp4.get()
 
         if sum(semaforo4) != ciclo:
             messagebox.showerror("Ciclo", "A soma dos tempos do Semáforo 4 são diferentes do ciclo!")
@@ -593,12 +597,18 @@ class Principal:
 
         if self.combo_plano.get() == 'principal':
             self.anim_semaforos.matriz_principal.clear()
+            self.anim_semaforos.matriz_cor_inicial.clear()
+            self.anim_semaforos.matriz_cor_inicial = [s1_cor, s2_cor, s3_cor, s4_cor]
             self.anim_semaforos.matriz_principal = [semaforo1, semaforo2, semaforo3, semaforo4]
+
             self.desenhar_grafico(self.anim_semaforos.matriz_principal)
 
         elif self.combo_plano.get() == 'atuado':
             self.anim_semaforos.matriz_atuado.clear()
+            self.anim_semaforos.matriz_cor_inicial_atuado.clear()
+            self.anim_semaforos.matriz_cor_inicial_atuado = [s1_cor, s2_cor, s3_cor, s4_cor]
             self.anim_semaforos.matriz_atuado = [semaforo1, semaforo2, semaforo3, semaforo4]
+
             self.desenhar_grafico(self.anim_semaforos.matriz_atuado)
         else:
             messagebox.showerror("Tipo", "Antes, selecione um tipo de plano!")

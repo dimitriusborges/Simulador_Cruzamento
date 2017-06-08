@@ -140,15 +140,15 @@ class Semaforo:
         cor_verde = Cores().verde_off
         largura_vd = 1
 
-        if foco is "vermelho":
+        if foco == "vermelho":
             cor_vermelho = Cores().vermelho_on
             largura_vm = 2
             self.foco = 'vermelho'
-        if foco is "amarelo":
+        if foco == "amarelo":
             cor_amarelo = Cores().amarelo_on
             largura_am = 2
             self.foco = 'amarelo'
-        if foco is "verde":
+        if foco == "verde":
             cor_verde = Cores().verde_on
             largura_vd = 2
             self.foco = 'verde'

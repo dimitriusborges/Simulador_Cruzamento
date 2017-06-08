@@ -25,13 +25,21 @@ class AnimSemaforos(threading.Thread):
                                  [15, 2, 23]]  # LO
 
         # Configuração de plano atuado
-        self.matriz_atuado = [[4, 1, 8],  # NS
-                              [4, 1, 8],  # OL
-                              [4, 1, 8],  # SN
-                              [4, 1, 8]]  # LO
+        self.matriz_atuado = [[14, 2, 4],  # NS
+                              [0, 0, 20],  # OL
+                              [14, 2, 4],  # SN
+                              [0, 0, 20]]  # LO
 
-        self.matriz_operante = list(
-            self.matriz_principal)  # Matriz auxiliar. A leitura dos tempos durante a animação é feita nela
+        self.matriz_cor_inicial = []
+        self.matriz_cor_inicial_atuado = []
+
+        for semaforo in self.semaforos:
+            self.matriz_cor_inicial.append(semaforo.cor_inicial)
+            self.matriz_cor_inicial_atuado.append("vermelho")
+
+        # Matrizes auxiliares. A leitura dos tempos e cores durante a animação são feitas nelas
+        self.matriz_cor_inicial_operante = list(self.matriz_cor_inicial)
+        self.matriz_operante = list(self.matriz_principal)
 
         self.seq_cores = {"verde": "amarelo",  # Sequencia de cores que o foco deve assumir (verde->amarelo->vermelho)
                           "amarelo": "vermelho",
@@ -41,7 +49,8 @@ class AnimSemaforos(threading.Thread):
                            "amarelo": 1,
                            "vermelho": 2}
 
-        self.cor_inicial = self.semaforos[0].estado  # Variaveis para determinar o fim de um ciclo
+        # Variaveis para determinar o fim de um ciclo
+        self.cor_inicial = self.semaforos[0].estado
         self.flag_ciclo = False
 
         self.flag_atuado = False  # Variável de controle do sinal atuado
@@ -53,27 +62,32 @@ class AnimSemaforos(threading.Thread):
         Executa as ações de animação para cada semáforo
         :return:
         """
-        # Repetição secundária
+
+        # Repetição inicial - preenche as variavéis
         while True:
 
             self.contadores.clear()
 
             # Preenche a lista de timers com o tempo da cor inicial de cada foco
+            # Altera o estado e o foco de cada semaforo para o da cor inicial
             for semaforo in self.semaforos:
-                estado = semaforo.estado
 
-                indice_tempo = self.indice_cor[estado]
+                semaforo.estado = self.matriz_cor_inicial_operante[self.semaforos.index(semaforo)]
+                semaforo.mudar_foco(self.master, semaforo.estado)
+
+                indice_tempo = self.indice_cor[semaforo.estado]
 
                 self.contadores.append((self.matriz_operante[self.semaforos.index(semaforo)])[indice_tempo])
 
-            # Repetição principal
+            # Repetição principal - executado até o fim do ciclo do semáforo
             while True:
-                pointer = 0  # Variavel navegadora auxiliar, que relaciona a pos do contador com a pos do controlador
-                # Faz a contagem regressiva no timer de cada um dos semaforos
+                pointer = 0  # Variavel navegadora auxiliar, que relaciona a posicao do contador com a posicao
+                # do controlador
+
+                #  Faz a contagem regressiva no timer da cor atual de cada um dos semaforos.
                 for contador in self.contadores:
 
                     # Fim do timer = mudança de estado e novo tempo no contador
-
                     if contador == 0:
 
                         semaforo = self.semaforos[pointer]
@@ -82,8 +96,9 @@ class AnimSemaforos(threading.Thread):
                         indice_tempo = self.indice_cor[prox_estado]
                         self.contadores[pointer] = (self.matriz_operante[pointer])[indice_tempo]
 
-                        # Se uma cor tiver sido ignorada (tempo = 0), não altera a representação gráfica do semáforo
-                        if self.contadores[pointer] > 0:
+                        # Se uma cor não tiver sido ignorada (tempo = 0) e não for fim de ciclo
+                        #  altera a representação gráfica do semáforo. Caso contrário, ignora
+                        if self.contadores[pointer] > 0 and self.flag_ciclo is False:
                             semaforo.mudar_foco(self.master, prox_estado)
 
                         semaforo.estado = prox_estado
@@ -94,14 +109,12 @@ class AnimSemaforos(threading.Thread):
                             # Se o estado seguinte for igual ao inicial, indica reinicio de ciclo
                             if self.cor_inicial == prox_estado:
                                 self.flag_ciclo = True
-                                print("final ciclo")
 
                     else:
                         self.contadores[pointer] -= 1
 
                     pointer += 1
 
-                print(self.contadores)
                 time.sleep(1)
 
                 # Se o controlador está entrando em um novo ciclo
@@ -109,6 +122,7 @@ class AnimSemaforos(threading.Thread):
 
                     self.flag_ciclo = False
                     self.matriz_operante.clear()
+                    self.matriz_cor_inicial_operante.clear()
 
                     # Se foi feito um pedido de plano atuado
                     if self.flag_atuado is True:
@@ -117,6 +131,7 @@ class AnimSemaforos(threading.Thread):
 
                         # Recarrega a matriz com os tempos do plano atuado
                         self.matriz_operante = list(self.matriz_atuado)
+                        self.matriz_cor_inicial_operante = list(self.matriz_cor_inicial_atuado)
                         break
 
                     # Se não foi feito pedido de plano atuado, mantem os tempos do plano principal
@@ -124,4 +139,5 @@ class AnimSemaforos(threading.Thread):
 
                         # Recarrega os tempos do plano principal
                         self.matriz_operante = list(self.matriz_principal)
+                        self.matriz_cor_inicial_operante = list(self.matriz_cor_inicial)
                         break
