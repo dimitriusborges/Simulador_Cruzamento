@@ -526,7 +526,6 @@ class Principal:
         self.ciclo.delete(0, END)
         self.ciclo.insert(0, sum(tempo_atual[0]))
 
-        self.combo_ci_gp1.set(self.sem_ns.cor_inicial)
         self.tempo_vd_g1.delete(0, END)
         self.tempo_vd_g1.insert(0, (tempo_atual[0])[0])
         self.tempo_am_g1.delete(0, END)
@@ -534,7 +533,6 @@ class Principal:
         self.tempo_vm_g1.delete(0, END)
         self.tempo_vm_g1.insert(0, (tempo_atual[0])[2])
 
-        self.combo_ci_gp2.set(self.sem_ol.cor_inicial)
         self.tempo_vd_g2.delete(0, END)
         self.tempo_vd_g2.insert(0, (tempo_atual[1])[0])
         self.tempo_am_g2.delete(0, END)
@@ -542,7 +540,6 @@ class Principal:
         self.tempo_vm_g2.delete(0, END)
         self.tempo_vm_g2.insert(0, (tempo_atual[1])[2])
 
-        self.combo_ci_gp3.set(self.sem_sn.cor_inicial)
         self.tempo_vd_g3.delete(0, END)
         self.tempo_vd_g3.insert(0, (tempo_atual[2])[0])
         self.tempo_am_g3.delete(0, END)
@@ -550,13 +547,22 @@ class Principal:
         self.tempo_vm_g3.delete(0, END)
         self.tempo_vm_g3.insert(0, (tempo_atual[2])[2])
 
-        self.combo_ci_gp4.set(self.sem_lo.cor_inicial)
         self.tempo_vd_g4.delete(0, END)
         self.tempo_vd_g4.insert(0, (tempo_atual[3])[0])
         self.tempo_am_g4.delete(0, END)
         self.tempo_am_g4.insert(0, (tempo_atual[3])[1])
         self.tempo_vm_g4.delete(0, END)
         self.tempo_vm_g4.insert(0, (tempo_atual[3])[2])
+
+        if self.combo_plano.get() == 'principal':
+            cores_iniciais = self.anim_semaforos.matriz_cor_inicial
+        else:
+            cores_iniciais = self.anim_semaforos.matriz_cor_inicial_atuado
+
+        self.combo_ci_gp1.set(cores_iniciais[0])
+        self.combo_ci_gp2.set(cores_iniciais[1])
+        self.combo_ci_gp3.set(cores_iniciais[2])
+        self.combo_ci_gp4.set(cores_iniciais[3])
 
         self.desenhar_grafico(tempo_atual)
 
