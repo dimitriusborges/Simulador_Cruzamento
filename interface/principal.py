@@ -104,7 +104,7 @@ class Principal:
 
     def inserir_ruas(self):
         """
-
+        Insere na interface a representação gráfica das ruas
         :return:
         """
         comp = Rua().comprimento
@@ -166,7 +166,7 @@ class Principal:
 
     def inserir_semaforos(self):
         """
-
+        Insere na interface a representação gráfica dos semáforos
         :return:
         """
         # Semaforos
