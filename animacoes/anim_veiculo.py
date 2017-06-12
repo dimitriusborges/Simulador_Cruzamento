@@ -157,7 +157,6 @@ class AnimVeiculos(threading.Thread):
         if veiculo.sentido == 'ns' or veiculo.sentido == 'ol':
 
             if prox_pos[0] + prox_pos[1] > veiculo.pos_final[0] + veiculo.pos_final[1]:
-                #print("Final do percurso")
 
                 veiculo.remover(self.master)
                 fila_veiculos.remove(veiculo)
@@ -167,7 +166,6 @@ class AnimVeiculos(threading.Thread):
         elif veiculo.sentido == 'sn' or veiculo.sentido == 'lo':
 
             if prox_pos[0] + prox_pos[1] < veiculo.pos_final[0] + veiculo.pos_final[1]:
-                #print("Final do percurso")
 
                 veiculo.remover(self.master)
                 fila_veiculos.remove(veiculo)

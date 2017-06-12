@@ -701,7 +701,6 @@ class Principal:
             for veiculo in self.veiculos_ns:
 
                 if veiculo.pos_atual[1] <= self.i_r1[1] + Veiculo().comprimento + Rua().metro:
-                    self.seeder_ns = 0
                     self.incrementar_contador('imp_ns', "Impedidos")
                     return
 
@@ -724,7 +723,6 @@ class Principal:
 
                 if veiculo.pos_atual[1] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[1] + Rua().comprimento + Rua().largura + Rua().comprimento - Veiculo().comprimento:
-                    self.seeder_ns = 0
                     self.incrementar_contador('imp_sn', "Impedidos")
                     return
 
@@ -761,7 +759,6 @@ class Principal:
             for veiculo in self.veiculos_ol:
 
                 if veiculo.pos_atual[0] <= self.i_r2[0] + Veiculo().comprimento + Rua().metro:
-                    self.seeder_ol = 0
                     self.incrementar_contador('imp_ol', "Impedidos")
                     return
 
@@ -784,7 +781,6 @@ class Principal:
 
                 if veiculo.pos_atual[0] + Veiculo().comprimento + Rua().metro \
                         >= self.i_r1[0] + Rua().comprimento + Rua().largura + Rua().comprimento + Veiculo().comprimento:
-                    self.seeder_ol = 0
                     self.incrementar_contador('imp_lo', "Impedidos")
                     return
 
